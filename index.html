@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="VisiPrint: Previewing 3D-Print Appearances from Real Material Samples.">
+  <meta property="og:title" content="VisiPrint: Previewing 3D-Print Appearances from Real Material Samples"/>
+  <meta property="og:description" content="VisiPrint: Previewing 3D-Print Appearances from Real Material Samples."/>
+  <meta property="og:url" content="https://maxineaps.github.io/visiprint-project-site/"/>
+  <meta property="og:image" content="static/images/visiprint_banner.png" />
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta name="twitter:title" content="VisiPrint: Previewing 3D-Print Appearances from Real Material Samples">
+  <meta name="twitter:description" content="VisiPrint: Previewing 3D-Print Appearances from Real Material Samples.">
+  <meta name="twitter:image" content="static/images/visiprint_banner.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="keywords" content="3D printing, computational fabrication, print preview, appearance preview, filament visualization, sliced models, diffusion, computer vision">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VisiPrint: Previewing 3D-Print Appearances from Real Material Samples</title>
+  <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+  rel="stylesheet">
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://documentcloud.adobe.com/view-sdk/main.js"></script>
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+  <script src="static/js/bulma-carousel.min.js"></script>
+  <script src="static/js/bulma-slider.min.js"></script>
+  <script src="static/js/index.js"></script>
+</head>
+<body>
+  
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-1 publication-title"><i>VisiPrint</i>: Previewing 3D-Print Appearances from Real Material Samples</h1>
+            
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">
+                <a href="https://maxineps.com" target="_blank">Maxine Perroni-Scharf</a>,</span>
+              <span class="author-block">
+                <a href="https://farazfaruqi.com/" target="_blank">Faraz Faruqi</a>,</span>
+              <span class="author-block">
+                <a href="https://sooyeon25.com/" target="_blank">SooYeon Ahn</a>,</span>
+              <span class="author-block">
+                Raul Eduardo Hernandez,</span>
+              <span class="author-block">
+                <a href="https://www.cs.princeton.edu/~smr/" target="_blank">Szymon Rusinkiewicz</a>,</span>
+              <span class="author-block">
+                <a href="https://billf.mit.edu/" target="_blank">William Freeman</a>,</span>
+              <span class="author-block">
+                <a href="https://hcie.csail.mit.edu/stefanie-mueller.html" target="_blank">Stefanie Mueller</a>
+              </span>
+            </div>
+
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">MIT CSAIL, MIT, Princeton University, and Gwangju Institute of Science and Technology<br>CHI 2026</span>
+            </div>
+
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <span class="link-block">
+                  <a href="VisiPrint.pdf" target="_blank"
+                  class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <center><img style="margin-top:1cm;" src="static/images/visiprint_banner.png" alt="VisiPrint teaser image"></center>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section hero is-light">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              We present <i>VisiPrint</i>, a tool for appearance-first previews of 3D-printed objects. Existing print preview slicers focus on toolpaths rather than appearance, while rendering tools are complex and cannot automatically reproduce slicing patterns. Prior work has shown persistent gaps between digital previews and printed results, including color shifts, gloss and translucency changes, and layer-line highlights. <i>VisiPrint</i> addresses this by combining slicer screenshots with filament photos through a custom diffusion-based synthesis pipeline. We present both a standalone user interface compatible with any slicer and an Ultimaker Cura plugin. We evaluate <i>VisiPrint</i> through a user study showing that it is significantly faster, easier to use, and more faithful than alternatives: within a time limit, participants completed 100% of preview tasks with <i>VisiPrint</i>, compared to 63% with Cura and 13% with Blender. <i>VisiPrint</i> narrows the gap between design intent and printed appearance by complementing settings-centric tools with appearance-driven decision support.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hero is-small">
+    <div class="hero-body">
+      <div class="container">
+        <h2 class="title is-3">Overview</h2>
+        <div class="columns is-centered has-text-centered">
+          <div class="column is-four-fifths">
+            <div class="publication-image">
+              <img src="static/images/visiprint_overview.png" alt="VisiPrint Overview">
+            </div>
+            <div class="content has-text-justified">
+              <p class="is-size-6 has-text-centered">
+                <i>VisiPrint</i> lets users preview how a 3D print is likely to look before fabrication using just two inputs: a screenshot of the sliced model and a photo of the intended filament or printed material sample. The system preserves slicing-dependent appearance cues while transferring material characteristics such as color, translucency, gloss, and texture. It works across slicers and supports both a standalone interface and an Ultimaker Cura plugin, helping users make appearance-driven printing decisions earlier in the workflow.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title">BibTeX</h2>
+      <pre><code>
+@inproceedings{PerroniScharf2026VisiPrint,
+  author    = {Maxine Perroni-Scharf and Faraz Faruqi and SooYeon Ahn and Raul Eduardo Hernandez and Szymon Rusinkiewicz and William Freeman and Stefanie Mueller},
+  title     = {VisiPrint: Previewing 3D-Print Appearances from Real Material Samples},
+  booktitle = {Proceedings of the 2026 CHI Conference on Human Factors in Computing Systems (CHI '26)},
+  year      = {2026},
+  month     = {April 13--17},
+  address   = {Barcelona, Spain},
+  publisher = {ACM},
+  doi       = {10.1145/3772318.3790851},
+  isbn      = {979-8-4007-2278-3/2026/04}
+}
+      </code></pre>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="content">
+            <p>
+              This page was built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project Page Template</a>.
+              You are free to borrow the source of this website, we just ask that you link back to this page in the footer. <br> This website is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
