@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VisiPrint: A Walkthrough</title>
+<meta name="description" content="An interactive walkthrough of VisiPrint (CHI 2026): previewing the appearance of 3D prints from a slicer screenshot and a photo of a material sample.">
+<meta property="og:title" content="VisiPrint: Previewing 3D-Print Appearance from Real Material Samples">
+<meta property="og:description" content="An interactive walkthrough of how VisiPrint turns a slicer screenshot and a filament photo into a preview of the printed object.">
+<meta property="og:image" content="https://maxineaps.github.io/visiprint-project-site/walkthrough/assets/teaser_octopus_pink.jpg">
+<link rel="icon" href="../static/images/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --text: #1a1a1a; --muted: #6b6b6b; --faint: #9a9a9a; --rule: #e6e6e6; --bg: #ffffff; --panel: #f6f6f4;
+  --accent: #c8553d; --accent-soft: #f6e3de; --link: #1a1a1a; --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --col: 680px; --wide: 980px;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.65 Inter, system-ui, -apple-system, sans-serif; }
+a { color: var(--link); text-decoration: none; border-bottom: 1px solid #cfcfcf; }
+a:hover { border-bottom-color: var(--accent); color: var(--accent); }
+.col { max-width: var(--col); margin: 0 auto; padding: 0 20px; }
+.wide { max-width: var(--wide); margin: 0 auto; padding: 0 20px; }
+header.hero { padding: 64px 0 8px; }
+h1 { font-size: 40px; line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 14px; font-weight: 700; }
+.venue { font-style: italic; color: var(--muted); font-size: 20px; margin: 0 0 18px; }
+.authors { font-size: 18px; margin: 0 0 6px; line-height: 1.9; }
+.authors a { margin-right: 2px; }
+.affil { color: var(--muted); font-size: 15px; margin: 0 0 22px; }
+.links { display: flex; flex-wrap: wrap; gap: 10px 26px; margin: 0 0 36px; font-size: 17px; }
+.links a { font-weight: 500; }
+.links a.primary { color: var(--accent); border-bottom-color: var(--accent); }
+h2 { font-size: 26px; letter-spacing: -0.01em; margin: 64px 0 14px; display: flex; gap: 14px; align-items: baseline; }
+h2 .num { color: var(--accent); font-weight: 700; }
+h3 { font-size: 19px; margin: 34px 0 8px; }
+p { margin: 0 0 18px; }
+.lead { font-size: 18px; }
+.abstract b:first-child { font-weight: 700; }
+.disclaimer { background: var(--panel); border-radius: 10px; padding: 14px 18px; font-size: 15px; color: #3d3d3d; margin: 26px 0; }
+sup.fn { font-size: 11px; color: var(--accent); cursor: help; margin-left: 1px; }
+.note { display: block; font-size: 13.5px; color: var(--muted); border-left: 2px solid var(--accent-soft); padding: 2px 0 2px 12px; margin: -6px 0 18px; }
+figure { margin: 30px auto 34px; }
+figcaption { font-size: 14.5px; color: var(--muted); margin-top: 12px; line-height: 1.55; }
+figcaption b { color: var(--text); font-weight: 600; }
+.figbox { background: var(--panel); border-radius: 14px; padding: 18px; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 0 0 14px; font-size: 13px; }
+.controls .label { text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-size: 11.5px; margin-right: 2px; }
+.seg { display: inline-flex; background: #fff; border: 1px solid var(--rule); border-radius: 999px; padding: 3px; flex-wrap: wrap; }
+.seg button { border: 0; background: transparent; font: inherit; font-size: 13px; padding: 5px 12px; border-radius: 999px; cursor: pointer; color: var(--muted); }
+.seg button.on { background: var(--text); color: #fff; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; border: 1px solid rgba(0,0,0,0.15); }
+.trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.trio .cell { background: #fff; border-radius: 10px; overflow: hidden; position: relative; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; }
+.trio .cell img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.trio .tag, .stage-tag { position: absolute; left: 8px; top: 8px; background: rgba(255,255,255,0.92); font-size: 11.5px; padding: 3px 8px; border-radius: 6px; color: #333; font-weight: 500; }
+.arrowrow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center; font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+.stepper { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.stage { position: relative; background: #fff; border-radius: 10px; overflow: hidden; }
+.stage img { width: 100%; display: block; }
+.steps { display: flex; flex-direction: column; gap: 6px; }
+.steps button { text-align: left; border: 1px solid var(--rule); background: #fff; border-radius: 10px; padding: 10px 12px; font: inherit; font-size: 14px; cursor: pointer; color: var(--text); }
+.steps button .s-n { color: var(--accent); font-weight: 700; margin-right: 8px; }
+.steps button .s-d { display: none; color: var(--muted); font-size: 13px; margin-top: 4px; line-height: 1.45; }
+.steps button.on { border-color: var(--text); }
+.steps button.on .s-d { display: block; }
+.sliderrow { display: grid; grid-template-columns: 150px 1fr 48px; align-items: center; gap: 10px; font-size: 13.5px; margin: 6px 0; }
+.sliderrow output { font-family: var(--mono); font-size: 13px; text-align: right; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+.canvas2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.canvas2 .stage canvas { width: 100%; display: block; }
+.log { font-family: var(--mono); font-size: 12px; background: #fff; border-radius: 8px; padding: 10px 12px; margin-top: 12px; color: #444; white-space: pre; overflow-x: auto; line-height: 1.5; }
+.log .hit { color: var(--accent); font-weight: 600; }
+.btn { border: 1px solid var(--text); background: var(--text); color: #fff; font: inherit; font-size: 14px; font-weight: 500; padding: 8px 14px; border-radius: 8px; cursor: pointer; }
+.btn.ghost { background: #fff; color: var(--text); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.status { font-size: 13px; color: var(--muted); margin-left: 8px; }
+.compare { position: relative; overflow: hidden; border-radius: 10px; background: #fff; user-select: none; touch-action: pan-y; }
+.compare img { display: block; width: 100%; }
+.compare .top { position: absolute; inset: 0; clip-path: inset(0 0 0 50%); }
+.compare .bar { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,0.15); }
+.compare .knob { position: absolute; top: 50%; left: 50%; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; background: #fff; box-shadow: 0 1px 6px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; font-size: 13px; color: #555; cursor: ew-resize; }
+.compare .l, .compare .r { position: absolute; bottom: 8px; font-size: 11.5px; background: rgba(255,255,255,0.92); padding: 3px 8px; border-radius: 6px; }
+.compare .l { left: 8px; } .compare .r { right: 8px; }
+.bars { display: grid; gap: 10px; }
+.barrow { display: grid; grid-template-columns: 90px 1fr 50px; align-items: center; gap: 12px; font-size: 14px; }
+.barrow .track { background: #fff; border-radius: 6px; height: 26px; overflow: hidden; }
+.barrow .fill { height: 100%; background: #c9c9c4; border-radius: 6px; width: 0; transition: width 0.9s cubic-bezier(.2,.7,.2,1); }
+.barrow.us .fill { background: var(--accent); }
+.barrow .v { font-family: var(--mono); font-size: 13px; }
+.demo-frame { width: 100%; height: 980px; border: 0; border-radius: 12px; background: #fff; }
+.demo-placeholder { height: 260px; display: flex; flex-direction: column; gap: 12px; align-items: center; justify-content: center; text-align: center; color: var(--muted); font-size: 14px; }
+pre.bib { background: var(--panel); border-radius: 10px; padding: 16px; font-size: 12.5px; overflow-x: auto; line-height: 1.5; }
+.formula { font-family: "Times New Roman", serif; font-size: 19px; text-align: center; margin: 18px 0 22px; }
+.formula i { font-style: italic; }
+.small { font-size: 14px; color: var(--muted); }
+footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
+.toc { font-size: 14.5px; margin: 6px 0 0; padding-left: 20px; color: var(--muted); }
+.toc a { border-bottom: 0; color: var(--muted); }
+.toc a:hover { color: var(--accent); }
+@media (max-width: 720px) {
+  body { font-size: 16px; }
+  h1 { font-size: 30px; }
+  header.hero { padding-top: 36px; }
+  h2 { font-size: 22px; margin-top: 48px; }
+  .stepper { grid-template-columns: 1fr; }
+  .trio { gap: 6px; } .arrowrow { gap: 6px; font-size: 11px; }
+  .figbox { padding: 12px; border-radius: 10px; }
+  .sliderrow { grid-template-columns: 112px 1fr 40px; font-size: 12.5px; }
+  .canvas2 { grid-template-columns: 1fr; }
+  .demo-frame { height: 1500px; }
+  .trio .tag { font-size: 10px; padding: 2px 5px; left: 4px; top: 4px; }
+}
+</style>
+</head>
+<body>
+
+<header class="hero col">
+  <h1>VisiPrint: Previewing 3D-Print Appearance from Real Material Samples</h1>
+  <p class="venue">ACM CHI Conference on Human Factors in Computing Systems (CHI) 2026</p>
+  <p class="authors">
+    <a href="https://maxineps.com">Maxine Perroni-Scharf</a> ·
+    <a href="https://farazfaruqi.com/">Faraz Faruqi</a> ·
+    <a href="https://sooyeon25.com/">SooYeon Ahn</a> ·
+    Raul Eduardo Hernandez ·
+    <a href="https://www.cs.princeton.edu/~smr/">Szymon Rusinkiewicz</a> ·
+    <a href="https://billf.mit.edu/">William Freeman</a> ·
+    <a href="https://hcie.csail.mit.edu/stefanie-mueller.html">Stefanie Mueller</a>
+  </p>
+  <p class="affil">MIT CSAIL · Princeton University · Gwangju Institute of Science and Technology</p>
+  <div class="links">
+    <a class="primary" href="https://huggingface.co/spaces/maxigeenut/VisiPrint">Live demo</a>
+    <a href="../VisiPrint.pdf">Paper</a>
+    <a href="https://github.com/maxineAPS/VisiPrint">Code</a>
+    <a href="../">Project page</a>
+    <a href="#bibtex">BibTeX</a>
+  </div>
+</header>
+
+<section class="wide">
+  <figure id="fig-teaser">
+    <div class="figbox">
+      <div class="controls">
+        <span class="label">Object</span>
+        <span class="seg" data-group="tobj">
+          <button data-v="octopus" class="on">Octopus</button><button data-v="vase">Vase</button><button data-v="headphone_stand">Headphone stand</button>
+        </span>
+        <span class="label" style="margin-left:10px">Filament</span>
+        <span class="seg" data-group="tmat">
+          <button data-v="pink" class="on"><span class="swatch" style="background:#c2185b"></span>Pink</button><button data-v="silver"><span class="swatch" style="background:#9a9ea3"></span>Silver</button><button data-v="blue"><span class="swatch" style="background:#1f4fa3"></span>Blue</button><button data-v="clear"><span class="swatch" style="background:#eef2f4"></span>Clear</button>
+        </span>
+      </div>
+      <div class="trio">
+        <div class="cell"><img id="t-slice" alt="Slicer screenshot" src="assets/slice_octopus.webp"><span class="tag">Slicer screenshot</span></div>
+        <div class="cell"><img id="t-prev" alt="VisiPrint preview" src="assets/prev_octopus_pink.webp"><span class="tag">VisiPrint preview</span></div>
+        <div class="cell"><img id="t-real" alt="Photo of the real print" src="assets/real_octopus_pink.webp"><span class="tag">Real print (photo)</span></div>
+      </div>
+    </div>
+    <figcaption><b>From a slicer screenshot to a preview of the print.</b> Pick an object and a filament. The middle column is VisiPrint's
+      output, generated by the released pipeline on a GPU from the screenshot on the left and a photo of a small sample printed in that filament.
+      The right column is a photo of the object actually printed in that filament (taken from above, so the viewpoint differs).</figcaption>
+  </figure>
+</section>
+
+<main class="col">
+  <p class="abstract lead"><b>Abstract.</b> Slicers show you how a printer will move, not what the result will look like:
+    every part is drawn in the same flat yellow, whatever filament you load. VisiPrint closes that gap. Give it a screenshot
+    of your sliced model from any slicer and a photo of the filament you plan to use, and it produces a preview of the print
+    that keeps the slicing pattern (layer lines, seams, infill showing through) while taking on the colour, gloss,
+    translucency and texture of the real material. In a user study, participants completed every preview task with
+    VisiPrint within the time limit, compared with 63% using Cura and 13% using Blender.</p>
+
+  <div class="disclaimer">This post walks through the intuition behind each stage of VisiPrint, with figures you can play with.
+    It takes a few shortcuts compared with the paper; the <a href="../VisiPrint.pdf">paper</a> has the full treatment and the evaluation.
+    Figures marked <em>live</em> run the pipeline's own computation in your browser. Diffusion outputs were generated by the
+    <a href="https://github.com/maxineAPS/VisiPrint">released code</a> on a GPU with default settings; the slicing figure can
+    re-run the real model on demand, and the full <a href="https://huggingface.co/spaces/maxigeenut/VisiPrint">live demo</a> is at the end.</div>
+
+  <ol class="toc">
+    <li><a href="#s1">Why slicer previews mislead</a></li>
+    <li><a href="#s2">Two images in, one preview out</a></li>
+    <li><a href="#s3">Keeping the geometry: depth and adaptive edges</a></li>
+    <li><a href="#s4">Painting the material in: diffusion with an image prompt</a></li>
+    <li><a href="#s5">Getting the colour right</a></li>
+    <li><a href="#s6">Optional: teaching SDXL what prints look like</a></li>
+    <li><a href="#s7">Does it help people?</a></li>
+    <li><a href="#s8">Try it</a></li>
+  </ol>
+
+  <h2 id="s1"><span class="num">1</span>Why slicer previews mislead</h2>
+  <p>Before a print, the only picture most people see is the slicer's. It is a faithful picture of the <em>toolpaths</em>, but
+    the colours are a visualisation convention, not a prediction. Real filaments differ in ways that change how a part reads:
+    a metallic filament catches highlights on every layer line, a translucent one lets the inside of the part show through,
+    a dark matte one hides small features. These differences decide whether a print looks right, and today you find out only after the print
+    is done.</p>
+  <p>Physically based rendering could in principle predict this, but it needs a 3D model of the material (a BRDF or a
+    volumetric scattering model), careful lighting, and it does not reproduce the slicing pattern unless you also reconstruct
+    every toolpath. VisiPrint takes a different route: treat the preview as an <em>image-to-image</em> problem, with the slicer
+    screenshot carrying the geometry and slicing pattern and a photo carrying the material.</p>
+
+  <figure>
+    <div class="figbox">
+      <div class="controls"><span class="label">Drag to compare</span></div>
+      <div class="compare" id="cmp1">
+        <img src="assets/slice_boat.webp" alt="Slicer screenshot of the Benchy boat">
+        <div class="top"><img src="assets/prev_boat_silver.webp" alt="VisiPrint preview in silver PLA"></div>
+        <div class="bar"></div><div class="knob">⇆</div>
+        <span class="l">Slicer (Cura)</span><span class="r">VisiPrint, silver PLA</span>
+      </div>
+    </div>
+    <figcaption><b>Same toolpaths, different reading.</b> The slicer view and VisiPrint's preview for silver PLA share every
+      layer line, the brim and the hollow cabin; only the appearance changes.</figcaption>
+  </figure>
+
+  <h2 id="s2"><span class="num">2</span>Two images in, one preview out</h2>
+  <p>The inputs are deliberately simple so that VisiPrint works with any slicer: a <b>screenshot of the sliced model</b>,
+    which fixes the shape, the viewpoint and the slicing pattern, and a <b>material exemplar</b>, a photo of something printed in
+    the filament you want (a small sphere works well). The pipeline then prepares three kinds of guidance from the screenshot
+    before any image is generated. Step through them below.</p>
+
+  <figure>
+    <div class="figbox">
+      <div class="controls"><span class="label">Object</span>
+        <span class="seg" data-group="sobj"><button data-v="boat" class="on">Boat</button><button data-v="octopus">Octopus</button></span>
+      </div>
+      <div class="stepper">
+        <div class="stage"><img id="stage-img" src="assets/stage_boat_0.webp" alt="Pipeline stage"><span class="stage-tag" id="stage-tag">Slicer screenshot</span></div>
+        <div class="steps" id="steps">
+          <button data-s="0" class="on"><span class="s-n">0</span>Slicer screenshot<div class="s-d">The input. Any slicer works; the yellow is just the slicer's display colour.</div></button>
+          <button data-s="1"><span class="s-n">1</span>Foreground mask<div class="s-d">Background removal (rembg, U<sup>2</sup>-Net) separates the object from the build plate, and the mask is eroded with a 5 × 5 kernel so the generated material does not bleed onto the plate.</div></button>
+          <button data-s="2"><span class="s-n">2</span>Decoloured object<div class="s-d">Inside the mask the screenshot is converted to greyscale. The slicer's yellow is removed so it cannot leak into the result, while the shading and layer lines stay. This is the image the diffusion model repaints.</div></button>
+          <button data-s="3"><span class="s-n">3</span>Depth (DPT)<div class="s-d">A monocular depth network (DPT-Hybrid) estimates relative depth. It pins down the global shape and shading so the generated object keeps the screenshot's geometry.</div></button>
+          <button data-s="4"><span class="s-n">4</span>Edges (adaptive Canny)<div class="s-d">Canny edges inside the mask capture the slicing pattern: layer lines, seams, vents and holes. Section 3 shows how the threshold adapts to each screenshot.</div></button>
+        </div>
+      </div>
+    </div>
+    <figcaption><b>Preparing the guidance.</b> Intermediate images produced by the released pipeline for the example screenshots.</figcaption>
+  </figure>
+
+  <h2 id="s3"><span class="num">3</span>Keeping the geometry: depth and adaptive edges</h2>
+  <p>A diffusion model will happily invent a nicer-looking boat. To stop it, VisiPrint conditions generation on two
+    complementary signals through ControlNets. <b>Depth</b> carries the overall form, and on its own it produces smooth
+    objects that have lost their layer lines. <b>Edges</b> carry exactly what makes a print look printed: the stack of layers, the
+    seam, vents and holes. Neither is enough alone; together they keep the preview tied to the toolpaths.</p>
+  <p>The catch with edges is the threshold. Slicer screenshots vary a lot: a dark or low-contrast view
+    gives weak gradients, while dense details and infill give too many. A fixed Canny threshold either loses the layer lines or
+    drowns the image in noise. VisiPrint instead <em>searches</em> for a threshold. It measures gradient magnitudes inside the
+    object, then bisects over percentiles of that distribution until the fraction of edge pixels inside the mask falls in a
+    target band (12 to 25% by default).<span class="note">Outside the mask the image is filled with the median grey of the object
+    first, so the silhouette itself does not count as a slicing edge.</span></p>
+
+  <figure>
+    <div class="figbox">
+      <div class="controls"><span class="label">Live · runs in your browser</span>
+        <span class="seg" data-group="cobj"><button data-v="boat" class="on">Boat</button><button data-v="octopus">Octopus</button></span>
+      </div>
+      <div class="sliderrow"><span>Lower density</span><input type="range" id="c-lo" min="0.02" max="0.4" step="0.01" value="0.12"><output id="c-lo-o">0.12</output></div>
+      <div class="sliderrow"><span>Upper density</span><input type="range" id="c-hi" min="0.05" max="0.6" step="0.01" value="0.25"><output id="c-hi-o">0.25</output></div>
+      <div class="sliderrow"><span>Fixed threshold instead</span><input type="range" id="c-fixed" min="0" max="100" step="1" value="0"><output id="c-fixed-o">off</output></div>
+      <div class="canvas2" style="margin-top:12px">
+        <div class="stage"><canvas id="c-in"></canvas><span class="stage-tag">Input (decoloured)</span></div>
+        <div class="stage"><canvas id="c-out"></canvas><span class="stage-tag" id="c-tag">Adaptive edges</span></div>
+      </div>
+      <div class="log" id="c-log"></div>
+    </div>
+    <figcaption><b>Adaptive Canny, live.</b> Your browser runs the same search as the pipeline (Gaussian blur σ = 0.8,
+      Sobel gradients, Canny with L2 gradients and a low/high ratio of 0.25, removal of specks smaller than 3 pixels,
+      up to 8 bisection steps) on a 512 px copy of the screenshot.<sup class="fn" title="The pipeline runs at 1024 px; this figure uses 512 px to stay fast on phones.">1</sup>
+      Move the band to see the search settle on a different threshold, or set a fixed threshold to see what a single
+      global value does to the boat and the octopus.</figcaption>
+  </figure>
+
+  <h2 id="s4"><span class="num">4</span>Painting the material in: diffusion with an image prompt</h2>
+  <p>With the guidance ready, VisiPrint repaints the decoloured object using Stable Diffusion XL in <em>inpainting</em> mode,
+    so only the masked object changes and the build plate stays as it was in the screenshot. Two things steer the result.
+    The <b>material exemplar</b> enters through an IP-Adapter: an image encoder turns the photo into tokens that the diffusion
+    model attends to alongside the text prompt, so "what the material looks like" is specified by a picture rather than words.
+    The <b>depth and edge maps</b> enter through two ControlNets, which constrain the layout at every denoising step. This
+    material-transfer setup builds on ZeST<sup class="fn" title="ZeST: Zero-Shot Material Transfer from a Single Image. Cheng et al., ECCV 2024.">2</sup>, adding the slicing (edge) guidance and the steps around it.</p>
+  <p>The text prompt is kept minimal on purpose: an image captioner (BLIP) names the object and the prompt becomes
+    "A 3D printed <i>noun</i>".<span class="note">The captioner is not always right: it calls the vase a "dress" and the
+    headphone stand "metal". The image prompt and the ControlNets do most of the work, so those previews still come out
+    as a vase and a stand.</span> Users can override it, but strong prompts trade away faithfulness to the slicer image, so the
+    interface warns about this and exposes the prompt's weight against the image prompt.</p>
+  <p>The one control that matters most for printed parts is <b>Slicing Influence</b>, the weight on the edge ControlNet.
+    Too low and the layer lines melt into a smooth, moulded-looking object; too high and the edges dominate the material.</p>
+
+  <figure>
+    <div class="figbox">
+      <div class="controls"><span class="label">Slicing influence</span>
+        <span class="seg" data-group="slice"><button data-v="0.0">0.0</button><button data-v="0.4">0.4</button><button data-v="0.8" class="on">0.8 (default)</button><button data-v="1.0">1.0</button></span>
+      </div>
+      <div class="canvas2">
+        <div class="stage"><img id="sl-img" src="assets/slice_whistle_s0.8.webp" alt="Whistle preview"><span class="stage-tag" id="sl-tag">Slicing influence 0.8</span></div>
+        <div class="stage"><img src="assets/stage_whistle_edges.webp" alt="Edge map used as guidance"><span class="stage-tag">Edge guidance</span></div>
+      </div>
+      <div class="controls" style="margin:14px 0 0">
+        <span class="label">Live</span>
+        <input type="range" id="sl-live" min="0" max="1" step="0.05" value="0.6" style="width:180px"><output id="sl-live-o" style="font-family:var(--mono);font-size:13px">0.60</output>
+        <button class="btn" id="sl-run">Generate on the GPU</button><span class="status" id="sl-status"></span>
+      </div>
+    </div>
+    <figcaption><b>Trading material for slicing detail.</b> The silver whistle generated at four edge weights (depth weight
+      fixed at 0.8, 30 steps, seed 42). Pick any other value and press the button to run the real pipeline through the live
+      demo; it takes about 10 to 15 seconds and uses the free GPU allowance that Hugging Face gives each visitor.</figcaption>
+  </figure>
+
+  <h2 id="s5"><span class="num">5</span>Getting the colour right</h2>
+  <p>Diffusion models are good at texture and gloss but loose with exact colour: the generated pink is often a little too
+    light or too saturated. VisiPrint finishes with a statistical colour transfer inside the object mask. For each RGB channel
+    it matches the mean of the generated object to the mean of the exemplar, and moves the spread of values part of the way
+    toward the exemplar's:</p>
+  <div class="formula"><i>c</i>′ = (<i>c</i> − μ<sub>gen</sub>) · [1 + (σ<sub>ex</sub>/σ<sub>gen</sub> − 1) · <i>w</i><sub>lum</sub>] + μ<sub>ex</sub>,
+    &nbsp;&nbsp; out = (1 − <i>w</i><sub>col</sub>) · <i>c</i> + <i>w</i><sub>col</sub> · <i>c</i>′</div>
+  <p>The two weights are the interface's <b>Color Influence</b> (<i>w</i><sub>col</sub>, default 0.8) and
+    <b>Luminance Influence</b> (<i>w</i><sub>lum</sub>, default 0.6). Try them on a real, uncorrected output:</p>
+
+  <figure>
+    <div class="figbox">
+      <div class="controls"><span class="label">Live · runs in your browser</span></div>
+      <div class="sliderrow"><span>Color influence</span><input type="range" id="cc-col" min="0" max="1" step="0.01" value="0.8"><output id="cc-col-o">0.80</output></div>
+      <div class="sliderrow"><span>Luminance influence</span><input type="range" id="cc-lum" min="0" max="1" step="0.01" value="0.6"><output id="cc-lum-o">0.60</output></div>
+      <div class="trio" style="margin-top:12px">
+        <div class="cell"><img src="assets/exemplar_pink.webp" alt="Pink exemplar"><span class="tag">Exemplar</span></div>
+        <div class="cell"><img src="assets/raw_octopus_pink.webp" alt="Raw diffusion output"><span class="tag">Before correction</span></div>
+        <div class="cell"><canvas id="cc-out" style="width:100%;height:100%;object-fit:contain"></canvas><span class="tag">After correction</span></div>
+      </div>
+    </div>
+    <figcaption><b>Colour correction, live.</b> The middle image is the diffusion output before correction (generated with
+      Color Influence 0). The right image applies the formula above in your browser with your settings. At the defaults it
+      matches what the pipeline produces.<sup class="fn" title="The browser resamples images slightly differently from the pipeline, so pixels can differ by a few levels.">3</sup></figcaption>
+  </figure>
+
+  <h2 id="s6"><span class="num">6</span>Optional: teaching SDXL what prints look like</h2>
+  <p>Out of the box, SDXL's idea of "a 3D printed cup" is a glossy product render. VisiPrint optionally applies a small
+    LoRA fine-tune trained on 100 Creative Commons photos of real 3D prints, which pulls the model toward the look of actual
+    FDM parts: visible layers, filament sheen, imperfect surfaces. It is switched off by default and exposed as
+    <b>Use Fine-Tuned Model</b> in the interface.</p>
+  <figure>
+    <img src="assets/fig11_lora.webp" alt="SDXL outputs for 'A 3D printed cup' before and after fine-tuning" style="width:100%;border-radius:10px">
+    <figcaption><b>Before and after fine-tuning</b> (paper, Figure 11): SDXL alone versus with the LoRA, prompted with
+      "A 3D printed cup".</figcaption>
+  </figure>
+
+  <h2 id="s7"><span class="num">7</span>Does it help people?</h2>
+  <p>We compared VisiPrint with the two things people do today: inspecting the slicer preview (Cura) and building a render
+    (Blender). Participants were asked to produce previews of how prints would look within a time limit.</p>
+  <figure>
+    <div class="figbox">
+      <div class="controls"><span class="label">Preview tasks completed within the time limit</span></div>
+      <div class="bars" id="bars">
+        <div class="barrow us"><span>VisiPrint</span><div class="track"><div class="fill" data-w="100"></div></div><span class="v">100%</span></div>
+        <div class="barrow"><span>Cura</span><div class="track"><div class="fill" data-w="63"></div></div><span class="v">63%</span></div>
+        <div class="barrow"><span>Blender</span><div class="track"><div class="fill" data-w="13"></div></div><span class="v">13%</span></div>
+      </div>
+    </div>
+    <figcaption><b>User study.</b> Participants also rated VisiPrint as significantly faster, easier to use and more faithful
+      than both alternatives; the paper reports the workload (NASA-TLX) results and a perception study comparing previews with
+      real prints.</figcaption>
+  </figure>
+  <p>VisiPrint previews appearance only. It does not judge printability, strength or tolerances, and a preview assumes
+    lighting similar to the exemplar photo. Translucent filaments are the hardest case. For anything that matters, pair it
+    with your slicer's checks and a small test print.</p>
+
+  <h2 id="s8"><span class="num">8</span>Try it</h2>
+  <p>The full interface from the paper runs below on a shared GPU. Pick an example and a material, or upload your own
+    slicer screenshot and filament photo. Each preview takes about 10 to 15 seconds. Signed-out visitors get a few free
+    previews per day; signing in to Hugging Face (free) gives more.</p>
+</main>
+
+<section class="wide">
+  <figure>
+    <div class="figbox" id="demo-box">
+      <div class="demo-placeholder" id="demo-ph">
+        <div>The live demo loads the full interface (about 1 MB).</div>
+        <div><button class="btn" id="demo-load">Load the live demo here</button>
+          &nbsp;or&nbsp; <a href="https://huggingface.co/spaces/maxigeenut/VisiPrint">open it on Hugging Face</a></div>
+      </div>
+    </div>
+  </figure>
+</section>
+
+<main class="col">
+  <h2 id="bibtex"><span class="num">·</span>Citation</h2>
+<pre class="bib">@inproceedings{PerroniScharf2026VisiPrint,
+  author    = {Maxine Perroni-Scharf and Faraz Faruqi and SooYeon Ahn and Raul Eduardo Hernandez
+               and Szymon Rusinkiewicz and William Freeman and Stefanie Mueller},
+  title     = {VisiPrint: Previewing 3D-Print Appearances from Real Material Samples},
+  booktitle = {Proceedings of the 2026 CHI Conference on Human Factors in Computing Systems (CHI '26)},
+  year      = {2026},
+  address   = {Barcelona, Spain},
+  publisher = {ACM},
+  doi       = {10.1145/3772318.3790851}
+}</pre>
+  <footer>Notes: <sup>1</sup> The pipeline runs at 1024 px; the live edge figure uses 512 px to stay fast on phones.
+    <sup>2</sup> Cheng et al., <i>ZeST: Zero-Shot Material Transfer from a Single Image</i>, ECCV 2024.
+    <sup>3</sup> Browser image resampling differs slightly from the pipeline's, so pixels can differ by a few levels.
+    Slicer screenshots of models from Thingiverse.</footer>
+</main>
+
+<script>
+// ---------- small helpers ----------
+const $ = (id) => document.getElementById(id);
+function seg(group, onChange) {
+  const el = document.querySelector(`.seg[data-group="${group}"]`);
+  el.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    el.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
+    onChange(b.dataset.v);
+  });
+}
+function loadImage(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
+const preload = (srcs) => srcs.forEach((s) => { const i = new Image(); i.src = s; });
+
+// ---------- teaser ----------
+const T = { obj: 'octopus', mat: 'pink' };
+function updTeaser() {
+  $('t-slice').src = `assets/slice_${T.obj}.webp`;
+  $('t-prev').src = `assets/prev_${T.obj}_${T.mat}.webp`;
+  $('t-real').src = `assets/real_${T.obj}_${T.mat}.webp`;
+}
+seg('tobj', (v) => { T.obj = v; updTeaser(); });
+seg('tmat', (v) => { T.mat = v; updTeaser(); });
+setTimeout(() => preload(['octopus', 'vase', 'headphone_stand'].flatMap((o) => ['pink', 'silver', 'blue', 'clear'].flatMap((m) => [`assets/prev_${o}_${m}.webp`, `assets/real_${o}_${m}.webp`]))), 1200);
+
+// ---------- compare slider ----------
+(function () {
+  const box = $('cmp1'), top = box.querySelector('.top'), bar = box.querySelector('.bar'), knob = box.querySelector('.knob');
+  const set = (x) => { const r = box.getBoundingClientRect(); const f = Math.min(1, Math.max(0, (x - r.left) / r.width)) * 100;
+    top.style.clipPath = `inset(0 0 0 ${f}%)`; bar.style.left = knob.style.left = f + '%'; };
+  let drag = false;
+  box.addEventListener('pointerdown', (e) => { drag = true; set(e.clientX); });
+  window.addEventListener('pointermove', (e) => { if (drag) set(e.clientX); });
+  window.addEventListener('pointerup', () => { drag = false; });
+})();
+
+// ---------- pipeline stepper ----------
+const STAGE_NAMES = ['Slicer screenshot', 'Foreground mask', 'Decoloured object', 'Depth (DPT)', 'Edges (adaptive Canny)'];
+const S = { obj: 'boat', s: 0 };
+function updStage() { $('stage-img').src = `assets/stage_${S.obj}_${S.s}.webp`; $('stage-tag').textContent = STAGE_NAMES[S.s]; }
+$('steps').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return;
+  $('steps').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b)); S.s = +b.dataset.s; updStage(); });
+seg('sobj', (v) => { S.obj = v; updStage(); });
+setTimeout(() => preload(['boat', 'octopus'].flatMap((o) => [0, 1, 2, 3, 4].map((s) => `assets/stage_${o}_${s}.webp`))), 1500);
+
+// ---------- adaptive Canny (live) ----------
+// Mirrors get_adaptive_canny_edges() in the pipeline: median fill outside the mask, Gaussian blur,
+// Sobel magnitudes inside the mask, percentile bisection on the Canny high threshold (low = 0.25 * high),
+// Canny with L2 gradients, AND with the eroded mask, removal of components smaller than 3 px.
+const CW = 512;
+const C = { obj: 'boat', data: {} };
+function gaussKernel(sigma, k) { const h = (k - 1) / 2, w = []; let s = 0; for (let i = 0; i < k; i++) { const v = Math.exp(-((i - h) ** 2) / (2 * sigma * sigma)); w.push(v); s += v; } return w.map((v) => v / s); }
+function blur(src, W, H, sigma, k) {
+  const w = gaussKernel(sigma, k), h = (k - 1) / 2, tmp = new Float32Array(W * H), out = new Float32Array(W * H);
+  const cl = (v, n) => (v < 0 ? -v : v >= n ? 2 * n - v - 2 : v); // reflect-101 like OpenCV
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { let s = 0; for (let i = 0; i < k; i++) s += w[i] * src[y * W + cl(x + i - h, W)]; tmp[y * W + x] = s; }
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { let s = 0; for (let i = 0; i < k; i++) s += w[i] * tmp[cl(y + i - h, H) * W + x]; out[y * W + x] = Math.round(s); }
+  return out;
+}
+function sobel(g, W, H) {
+  const gx = new Float32Array(W * H), gy = new Float32Array(W * H);
+  const at = (x, y) => g[Math.min(H - 1, Math.max(0, y)) * W + Math.min(W - 1, Math.max(0, x))];
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    gx[y * W + x] = (at(x + 1, y - 1) + 2 * at(x + 1, y) + at(x + 1, y + 1)) - (at(x - 1, y - 1) + 2 * at(x - 1, y) + at(x - 1, y + 1));
+    gy[y * W + x] = (at(x - 1, y + 1) + 2 * at(x, y + 1) + at(x + 1, y + 1)) - (at(x - 1, y - 1) + 2 * at(x, y - 1) + at(x + 1, y - 1));
+  }
+  return { gx, gy };
+}
+function canny(gx, gy, W, H, lo, hi) {
+  const mag = new Float32Array(W * H); for (let i = 0; i < W * H; i++) mag[i] = Math.hypot(gx[i], gy[i]);
+  const st = new Uint8Array(W * H); // 0 none, 1 weak, 2 strong
+  const t = Math.tan(Math.PI / 8), t2 = Math.tan(3 * Math.PI / 8);
+  for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
+    const i = y * W + x, m = mag[i]; if (m <= lo) continue;
+    const ax = Math.abs(gx[i]), ay = Math.abs(gy[i]); let a, b;
+    if (ay <= ax * t) { a = mag[i - 1]; b = mag[i + 1]; }
+    else if (ay >= ax * t2) { a = mag[i - W]; b = mag[i + W]; }
+    else if ((gx[i] > 0) === (gy[i] > 0)) { a = mag[i - W - 1]; b = mag[i + W + 1]; }
+    else { a = mag[i - W + 1]; b = mag[i + W - 1]; }
+    if (m > a && m >= b) st[i] = m > hi ? 2 : 1;
+  }
+  const out = new Uint8Array(W * H), stack = [];
+  for (let i = 0; i < W * H; i++) if (st[i] === 2 && !out[i]) { out[i] = 1; stack.push(i);
+    while (stack.length) { const j = stack.pop(), y = (j / W) | 0, x = j - y * W;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const k = (y + dy) * W + (x + dx);
+        if (y + dy >= 0 && y + dy < H && x + dx >= 0 && x + dx < W && st[k] && !out[k]) { out[k] = 1; stack.push(k); } } } }
+  return out;
+}
+function removeSpecks(e, W, H, minArea) {
+  const lab = new Int32Array(W * H), out = new Uint8Array(W * H); let n = 0; const q = [];
+  for (let i = 0; i < W * H; i++) if (e[i] && !lab[i]) { n++; const comp = [i]; lab[i] = n; q.push(i);
+    while (q.length) { const j = q.pop(), y = (j / W) | 0, x = j - y * W;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const k = (y + dy) * W + (x + dx);
+        if (y + dy >= 0 && y + dy < H && x + dx >= 0 && x + dx < W && e[k] && !lab[k]) { lab[k] = n; q.push(k); comp.push(k); } } }
+    if (comp.length >= minArea) for (const j of comp) out[j] = 1; }
+  return out;
+}
+function percentile(arr, p) { const s = Float32Array.from(arr).sort(); const r = (p / 100) * (s.length - 1), lo = Math.floor(r), hi = Math.ceil(r); return s[lo] + (s[hi] - s[lo]) * (r - lo); }
+async function prepCanny(obj) {
+  if (C.data[obj]) return C.data[obj];
+  const [img, msk] = await Promise.all([loadImage(`assets/canny_${obj}_input.webp`), loadImage(`assets/canny_${obj}_mask.webp`)]);
+  const cv = document.createElement('canvas'); cv.width = CW; cv.height = CW; const cx = cv.getContext('2d', { willReadFrequently: true });
+  cx.drawImage(img, 0, 0, CW, CW); const px = cx.getImageData(0, 0, CW, CW).data;
+  cx.clearRect(0, 0, CW, CW); cx.drawImage(msk, 0, 0, CW, CW); const mp = cx.getImageData(0, 0, CW, CW).data;
+  const N = CW * CW, gray = new Float32Array(N), mask = new Uint8Array(N);
+  for (let i = 0; i < N; i++) { gray[i] = Math.round(0.299 * px[4 * i] + 0.587 * px[4 * i + 1] + 0.114 * px[4 * i + 2]); mask[i] = mp[4 * i] > 128 ? 1 : 0; }
+  const inside = []; for (let i = 0; i < N; i++) if (mask[i]) inside.push(gray[i]);
+  const med = percentile(inside, 50); const filled = gray.map((v, i) => (mask[i] ? v : med));
+  const gb = blur(filled, CW, CW, 0.8, 5); const { gx, gy } = sobel(gb, CW, CW);
+  const mags = []; for (let i = 0; i < N; i++) if (mask[i]) mags.push(Math.hypot(gx[i], gy[i]));
+  const er = new Uint8Array(N); let area = 0;
+  for (let y = 1; y < CW - 1; y++) for (let x = 1; x < CW - 1; x++) { let ok = 1; for (let dy = -1; dy <= 1 && ok; dy++) for (let dx = -1; dx <= 1; dx++) if (!mask[(y + dy) * CW + x + dx]) { ok = 0; break; } er[y * CW + x] = ok; area += ok; }
+  const d = { px, gray, mask, gx, gy, mags, er, area: Math.max(1, area) };
+  // input canvas: decoloured object
+  const ic = $('c-in'); ic.width = CW; ic.height = CW; const ix = ic.getContext('2d'); const id = ix.createImageData(CW, CW);
+  for (let i = 0; i < N; i++) { const v = mask[i] ? gray[i] : null; id.data[4 * i] = v ?? px[4 * i]; id.data[4 * i + 1] = v ?? px[4 * i + 1]; id.data[4 * i + 2] = v ?? px[4 * i + 2]; id.data[4 * i + 3] = 255; }
+  d.aspect = `${img.naturalWidth} / ${img.naturalHeight}`; d.inputImage = id; C.data[obj] = d; return d;
+}
+function edgesAt(d, tHigh) {
+  const e = canny(d.gx, d.gy, CW, CW, 0.25 * tHigh, tHigh);
+  for (let i = 0; i < e.length; i++) e[i] &= d.er[i];
+  const clean = removeSpecks(e, CW, CW, 3); let n = 0; for (let i = 0; i < clean.length; i++) n += clean[i];
+  return { edges: clean, dens: n / d.area };
+}
+let cannyBusy = false, cannyAgain = false;
+async function runCanny() {
+  if (cannyBusy) { cannyAgain = true; return; } cannyBusy = true;
+  const d = await prepCanny(C.obj); $('c-in').getContext('2d').putImageData(d.inputImage, 0, 0);
+  for (const id of ['c-in', 'c-out']) $(id).style.aspectRatio = d.aspect;
+  const lo = +$('c-lo').value, hi = Math.max(+$('c-hi').value, lo + 0.01), fixed = +$('c-fixed').value;
+  const lines = []; let res;
+  if (fixed > 0) {
+    res = edgesAt(d, fixed * 2.55);
+    lines.push(`fixed high threshold ${(fixed * 2.55).toFixed(1)}  ->  edge density ${(100 * res.dens).toFixed(1)}%`);
+    $('c-tag').textContent = 'Fixed-threshold edges';
+  } else {
+    let pLo = 60, pHi = 99;
+    for (let it = 0; it < 8; it++) {
+      const p = 0.5 * (pLo + pHi); const tHigh = Math.max(1, Math.min(255, percentile(d.mags, p)));
+      res = edgesAt(d, tHigh); const dens = res.dens; const ok = dens >= lo && dens <= hi;
+      lines.push(`step ${it + 1}: percentile ${p.toFixed(2).padStart(6)}  threshold ${tHigh.toFixed(1).padStart(6)}  density ${(100 * dens).toFixed(1).padStart(5)}%${ok ? '  <span class="hit">in band, stop</span>' : dens < lo ? '  too sparse' : '  too dense'}`);
+      if (dens < lo) pHi = p; else if (dens > hi) pLo = p; else break;
+    }
+    $('c-tag').textContent = 'Adaptive edges';
+  }
+  const oc = $('c-out'); oc.width = CW; oc.height = CW; const ox = oc.getContext('2d'); const od = ox.createImageData(CW, CW);
+  for (let i = 0; i < CW * CW; i++) { const v = res.edges[i] ? 255 : 0; od.data[4 * i] = od.data[4 * i + 1] = od.data[4 * i + 2] = v; od.data[4 * i + 3] = 255; }
+  ox.putImageData(od, 0, 0); $('c-log').innerHTML = lines.join('\n');
+  cannyBusy = false; if (cannyAgain) { cannyAgain = false; runCanny(); }
+}
+for (const [id, fmt] of [['c-lo', (v) => (+v).toFixed(2)], ['c-hi', (v) => (+v).toFixed(2)], ['c-fixed', (v) => (+v === 0 ? 'off' : (v * 2.55).toFixed(0))]]) {
+  $(id).addEventListener('input', () => { $(id + '-o').textContent = fmt($(id).value); runCanny(); });
+}
+seg('cobj', (v) => { C.obj = v; runCanny(); });
+new IntersectionObserver((es, ob) => { if (es.some((e) => e.isIntersecting)) { ob.disconnect(); runCanny(); } }, { rootMargin: '400px' }).observe($('c-out'));
+
+// ---------- slicing influence ----------
+seg('slice', (v) => { $('sl-img').src = `assets/slice_whistle_s${v}.webp`; $('sl-tag').textContent = `Slicing influence ${v}`; });
+$('sl-live').addEventListener('input', () => { $('sl-live-o').textContent = (+$('sl-live').value).toFixed(2); });
+// Calls the Space's HTTP API directly (no cookies, so it works cross-site from any page).
+const SPACE = 'https://maxigeenut-visiprint.hf.space/gradio_api/call/generate';
+async function generateLive(slicing) {
+  const r = await fetch(SPACE, { method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ data: [null, 'Whistle', null, 'Silver', {}, 0.8, 0.6, slicing, 30, false, false, false, '', 0.5] }) });
+  if (!r.ok) throw new Error(`The demo server answered ${r.status}. It may be restarting; try again in a minute.`);
+  const { event_id } = await r.json();
+  const text = await (await fetch(`${SPACE}/${event_id}`)).text();
+  const blocks = text.split('\n\n').map((b) => ({ ev: (b.match(/^event: (.*)$/m) || [])[1], data: (b.match(/^data: (.*)$/m) || [])[1] }));
+  const done = blocks.find((b) => b.ev === 'complete'), err = blocks.find((b) => b.ev === 'error');
+  if (!done) throw new Error(err && err.data && err.data !== 'null' ? JSON.parse(err.data) : 'The demo did not return a result.');
+  const [out, note] = JSON.parse(done.data);
+  const img = out && (out.url ? out : out.value);  // the image comes back as a component update
+  if (!img || !img.url) throw new Error(String(note || 'No image returned.').replace(/\*\*/g, '').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1'));
+  return { url: img.url, note };
+}
+$('sl-run').addEventListener('click', async () => {
+  const v = +(+$('sl-live').value).toFixed(2), btn = $('sl-run'), st = $('sl-status'); btn.disabled = true;
+  st.textContent = 'Generating on the GPU (about 10 to 15 s)…'; const t0 = performance.now();
+  try {
+    const { url } = await generateLive(v);
+    $('sl-img').src = url; $('sl-tag').textContent = `Slicing influence ${v} (live)`;
+    document.querySelectorAll('.seg[data-group="slice"] button').forEach((b) => b.classList.remove('on'));
+    st.textContent = `Generated live in ${((performance.now() - t0) / 1000).toFixed(1)} s.`;
+  } catch (e) { st.textContent = String(e.message || e).slice(0, 260); }
+  btn.disabled = false;
+});
+
+// ---------- colour correction (live) ----------
+const CC = {};
+async function prepCC() {
+  const [raw, ex, msk] = await Promise.all([loadImage('assets/raw_octopus_pink.webp'), loadImage('assets/exemplar_pink.webp'), loadImage('assets/canny_octopus_mask.webp')]);
+  const W = raw.naturalWidth, H = raw.naturalHeight; const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const cx = cv.getContext('2d', { willReadFrequently: true });
+  const grab = (im) => { cx.clearRect(0, 0, W, H); cx.drawImage(im, 0, 0, W, H); return cx.getImageData(0, 0, W, H).data; };
+  CC.W = W; CC.H = H; CC.t = grab(raw); CC.s = grab(ex); const m = grab(msk);
+  CC.idx = []; for (let i = 0; i < W * H; i++) if (m[4 * i] > 128) CC.idx.push(i);
+  CC.stats = [0, 1, 2].map((c) => { let ms = 0, mt = 0; for (const i of CC.idx) { ms += CC.s[4 * i + c]; mt += CC.t[4 * i + c]; } ms /= CC.idx.length; mt /= CC.idx.length;
+    let vs = 0, vt = 0; for (const i of CC.idx) { vs += (CC.s[4 * i + c] - ms) ** 2; vt += (CC.t[4 * i + c] - mt) ** 2; }
+    return { ms, mt, ss: Math.sqrt(vs / CC.idx.length), st: Math.sqrt(vt / CC.idx.length) }; });
+  const out = $('cc-out'); out.width = W; out.height = H; CC.ctx = out.getContext('2d'); CC.img = CC.ctx.createImageData(W, H);
+}
+function runCC() {
+  if (!CC.ctx) return; const blend = +$('cc-col').value, cw = +$('cc-lum').value, o = CC.img.data, t = CC.t;
+  for (let i = 0; i < t.length; i++) o[i] = t[i];
+  for (let c = 0; c < 3; c++) { const { ms, mt, ss, st } = CC.stats[c]; const adj = 1 + (ss / (st + 1e-6) - 1) * cw;
+    for (const i of CC.idx) o[4 * i + c] = (t[4 * i + c] - mt) * adj + ms; }
+  for (let i = 0; i < o.length; i += 4) for (let c = 0; c < 3; c++) o[i + c] = Math.max(0, Math.min(255, (1 - blend) * t[i + c] + blend * o[i + c]));
+  CC.ctx.putImageData(CC.img, 0, 0);
+}
+for (const id of ['cc-col', 'cc-lum']) $(id).addEventListener('input', () => { $(id + '-o').textContent = (+$(id).value).toFixed(2); runCC(); });
+new IntersectionObserver(async (es, ob) => { if (es.some((e) => e.isIntersecting)) { ob.disconnect(); await prepCC(); runCC(); } }, { rootMargin: '400px' }).observe($('cc-out'));
+
+// ---------- user study bars ----------
+new IntersectionObserver((es, ob) => { if (es.some((e) => e.isIntersecting)) { ob.disconnect(); document.querySelectorAll('#bars .fill').forEach((f) => { f.style.width = f.dataset.w + '%'; }); } }, { threshold: 0.4 }).observe($('bars'));
+
+// ---------- live demo embed ----------
+$('demo-load').addEventListener('click', () => {
+  $('demo-box').innerHTML = '<iframe class="demo-frame" src="https://maxigeenut-visiprint.hf.space/?__theme=light" title="VisiPrint live demo" allow="clipboard-write" loading="eager"></iframe>';
+});
+</script>
+</body>
+</html>
