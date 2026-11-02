@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
+img { max-width: 100%; height: auto; }
 :root {
   --text: #1a1a1a; --muted: #6b6b6b; --faint: #9a9a9a; --rule: #e6e6e6; --bg: #ffffff; --panel: #f6f6f4;
   --accent: #c8553d; --accent-soft: #f6e3de; --link: #1a1a1a; --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -162,9 +163,9 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
         </span>
       </div>
       <div class="trio">
-        <div class="cell"><img id="t-slice" alt="Slicer screenshot" src="assets/slice_octopus.webp"><span class="tag">Slicer screenshot</span></div>
-        <div class="cell"><img id="t-prev" alt="VisiPrint preview" src="assets/prev_octopus_pink.webp"><span class="tag">VisiPrint preview</span></div>
-        <div class="cell"><img id="t-real" alt="Photo of the real print" src="assets/real_octopus_pink.webp"><span class="tag">Real print (photo)</span></div>
+        <div class="cell"><img fetchpriority="high" id="t-slice" alt="Slicer screenshot" src="assets/slice_octopus.webp" width="858" height="742"><span class="tag">Slicer screenshot</span></div>
+        <div class="cell"><img fetchpriority="high" id="t-prev" alt="VisiPrint preview" src="assets/prev_octopus_pink.webp" width="858" height="742"><span class="tag">VisiPrint preview</span></div>
+        <div class="cell"><img fetchpriority="high" id="t-real" alt="Photo of the real print" src="assets/real_octopus_pink.webp" width="800" height="800"><span class="tag">Real print (photo)</span></div>
       </div>
     </div>
     <figcaption><b>From a slicer screenshot to a preview of the print.</b> Pick an object and a filament. The middle column is VisiPrint's
@@ -213,8 +214,8 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
     <div class="figbox">
       <div class="controls"><span class="label">Drag to compare</span></div>
       <div class="compare" id="cmp1" tabindex="0" role="slider" aria-label="Compare the slicer screenshot with the VisiPrint preview" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
-        <img src="assets/slice_boat.webp" alt="Slicer screenshot of the Benchy boat" draggable="false">
-        <div class="top"><img src="assets/prev_boat_silver.webp" alt="VisiPrint preview in silver PLA" draggable="false"></div>
+        <img loading="lazy" decoding="async" src="assets/slice_boat.webp" alt="Slicer screenshot of the Benchy boat" draggable="false" width="1000" height="862">
+        <div class="top"><img loading="lazy" decoding="async" src="assets/prev_boat_silver.webp" alt="VisiPrint preview in silver PLA" draggable="false" width="1000" height="862"></div>
         <div class="bar"></div><div class="knob">⇆</div>
         <span class="l">Slicer (Cura)</span><span class="r">VisiPrint, silver PLA</span>
       </div>
@@ -235,7 +236,7 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
         <span class="seg" data-group="sobj"><button data-v="boat" class="on">Boat</button><button data-v="octopus">Octopus</button></span>
       </div>
       <div class="stepper">
-        <div class="stage"><img id="stage-img" src="assets/stage_boat_0.webp" alt="Pipeline stage"><span class="stage-tag" id="stage-tag">Slicer screenshot</span></div>
+        <div class="stage"><img loading="lazy" decoding="async" id="stage-img" src="assets/stage_boat_0.webp" alt="Pipeline stage" width="900" height="776"><span class="stage-tag" id="stage-tag">Slicer screenshot</span></div>
         <div class="steps" id="steps">
           <button data-s="0" class="on"><span class="s-n">0</span>Slicer screenshot<div class="s-d">The input. Any slicer works; the yellow is just the slicer's display colour.</div></button>
           <button data-s="1"><span class="s-n">1</span>Foreground mask<div class="s-d">Background removal (rembg, U<sup>2</sup>-Net) separates the object from the build plate, and the mask is eroded with a 5 × 5 kernel so the generated material does not bleed onto the plate.</div></button>
@@ -302,8 +303,8 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
         <span class="seg" data-group="slice"><button data-v="0.0">0.0</button><button data-v="0.4">0.4</button><button data-v="0.8" class="on">0.8 (default)</button><button data-v="1.0">1.0</button></span>
       </div>
       <div class="canvas2">
-        <div class="stage"><img id="sl-img" src="assets/slice_whistle_s0.8.webp" alt="Whistle preview"><span class="stage-tag" id="sl-tag">Slicing influence 0.8</span></div>
-        <div class="stage"><img src="assets/stage_whistle_edges.webp" alt="Edge map used as guidance"><span class="stage-tag">Edge guidance</span></div>
+        <div class="stage"><img loading="lazy" decoding="async" id="sl-img" src="assets/slice_whistle_s0.8.webp" alt="Whistle preview" width="900" height="831"><span class="stage-tag" id="sl-tag">Slicing influence 0.8</span></div>
+        <div class="stage"><img loading="lazy" decoding="async" src="assets/stage_whistle_edges.webp" alt="Edge map used as guidance" width="900" height="831"><span class="stage-tag">Edge guidance</span></div>
       </div>
       <div class="controls" style="margin:14px 0 0">
         <span class="label">Live</span>
@@ -332,8 +333,8 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
       <div class="sliderrow"><span>Color influence</span><input type="range" id="cc-col" min="0" max="1" step="0.01" value="0.8"><output id="cc-col-o">0.80</output></div>
       <div class="sliderrow"><span>Luminance influence</span><input type="range" id="cc-lum" min="0" max="1" step="0.01" value="0.6"><output id="cc-lum-o">0.60</output></div>
       <div class="trio" style="margin-top:12px">
-        <div class="cell"><img src="assets/exemplar_pink.webp" alt="Pink exemplar"><span class="tag">Exemplar</span></div>
-        <div class="cell"><img src="assets/raw_octopus_pink.webp" alt="Raw diffusion output"><span class="tag">Before correction</span></div>
+        <div class="cell"><img loading="lazy" decoding="async" src="assets/exemplar_pink.webp" alt="Pink exemplar" width="906" height="906"><span class="tag">Exemplar</span></div>
+        <div class="cell"><img loading="lazy" decoding="async" src="assets/raw_octopus_pink.webp" alt="Raw diffusion output" width="858" height="742"><span class="tag">Before correction</span></div>
         <div class="cell"><canvas id="cc-out" style="width:100%;height:100%;object-fit:cover"></canvas><span class="tag">After correction</span></div>
       </div>
     </div>
@@ -348,7 +349,7 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
     FDM parts: visible layers, filament sheen, imperfect surfaces. It is switched off by default and exposed as
     <b>Use Fine-Tuned Model</b> in the interface.</p>
   <figure>
-    <img src="assets/fig11_lora.webp" alt="SDXL outputs for 'A 3D printed cup' before and after fine-tuning" style="width:100%;border-radius:10px">
+    <img loading="lazy" decoding="async" src="assets/fig11_lora.webp" alt="SDXL outputs for 'A 3D printed cup' before and after fine-tuning" style="width:100%;border-radius:10px" width="734" height="490">
     <figcaption><b>Before and after fine-tuning</b> (paper, Figure 11): SDXL alone versus with the LoRA, prompted with
       "A 3D printed cup".</figcaption>
   </figure>
@@ -427,6 +428,10 @@ function seg(group, onChange) {
 }
 function loadImage(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
 const preload = (srcs) => srcs.forEach((s) => { const i = new Image(); i.src = s; });
+// Background preloads wait until the page has loaded and the browser is idle, so they never
+// compete with the images on the first screen (matters on slow phone connections).
+const whenIdle = (fn) => { const go = () => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 4000 }) : setTimeout(fn, 300));
+  if (document.readyState === 'complete') go(); else addEventListener('load', go, { once: true }); };
 
 // ---------- teaser ----------
 const T = { obj: 'octopus', mat: 'pink' };
@@ -437,7 +442,7 @@ function updTeaser() {
 }
 seg('tobj', (v) => { T.obj = v; updTeaser(); });
 seg('tmat', (v) => { T.mat = v; updTeaser(); });
-setTimeout(() => preload(['octopus', 'vase', 'headphone_stand'].flatMap((o) => ['pink', 'silver', 'blue', 'clear'].flatMap((m) => [`assets/prev_${o}_${m}.webp`, `assets/real_${o}_${m}.webp`]))), 1200);
+whenIdle(() => preload(['octopus', 'vase', 'headphone_stand'].flatMap((o) => ['pink', 'silver', 'blue', 'clear'].flatMap((m) => [`assets/prev_${o}_${m}.webp`, `assets/real_${o}_${m}.webp`]))));
 
 // ---------- compare slider ----------
 (function () {
@@ -466,7 +471,7 @@ function updStage() { $('stage-img').src = `assets/stage_${S.obj}_${S.s}.webp`; 
 $('steps').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return;
   $('steps').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b)); syncPressed($('steps')); S.s = +b.dataset.s; updStage(); });
 seg('sobj', (v) => { S.obj = v; updStage(); });
-setTimeout(() => preload(['boat', 'octopus'].flatMap((o) => [0, 1, 2, 3, 4].map((s) => `assets/stage_${o}_${s}.webp`))), 1500);
+whenIdle(() => preload(['boat', 'octopus'].flatMap((o) => [0, 1, 2, 3, 4].map((s) => `assets/stage_${o}_${s}.webp`))));
 
 // ---------- adaptive Canny (live) ----------
 // Mirrors get_adaptive_canny_edges() in the pipeline: median fill outside the mask, Gaussian blur,
