@@ -305,7 +305,7 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
     </div>
     <figcaption><b>Trading material for slicing detail.</b> The silver whistle generated at four edge weights (depth weight
       fixed at 0.8, 30 steps, seed 42). Pick any other value and press the button to run the real pipeline through the live
-      demo; it takes about 10 to 15 seconds and uses the free GPU allowance that Hugging Face gives each visitor.</figcaption>
+      demo; it takes about 10 to 15 seconds and uses Hugging Face's small signed-out allowance.</figcaption>
   </figure>
 
   <h2 id="s5"><span class="num">5</span>Getting the colour right</h2>
@@ -366,18 +366,19 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
     with your slicer's checks and a small test print.</p>
 
   <h2 id="s8"><span class="num">8</span>Try it</h2>
-  <p>The full interface from the paper runs below on a shared GPU. Pick an example and a material, or upload your own
-    slicer screenshot and filament photo. Each preview takes about 10 to 15 seconds. Signed-out visitors get a few free
-    previews per day; signing in to Hugging Face (free) gives more.</p>
+  <p>The full interface from the paper runs on a shared GPU. Pick an example and a material, or upload your own
+    slicer screenshot and filament photo. Each preview takes about 10 to 15 seconds. Open it on Hugging Face while signed
+    in to use your own daily GPU allowance; signed-out visitors get only a few previews per day.</p>
 </main>
 
 <section class="wide">
   <figure>
     <div class="figbox" id="demo-box">
       <div class="demo-placeholder" id="demo-ph">
-        <div>The live demo loads the full interface (about 1 MB).</div>
-        <div><button class="btn" id="demo-load">Load the live demo here</button>
-          &nbsp;or&nbsp; <a href="https://huggingface.co/spaces/maxigeenut/VisiPrint">open it on Hugging Face</a></div>
+        <a class="btn" style="border-bottom:1px solid var(--text);color:#fff;padding:12px 20px;font-size:16px" href="https://huggingface.co/spaces/maxigeenut/VisiPrint" target="_blank" rel="noopener">Open the live demo</a>
+        <div>Runs on Hugging Face with your signed-in account.</div>
+        <div><button class="btn ghost" id="demo-load">Or load it inside this page</button></div>
+        <div class="small">Inside this page every preview counts as signed out.</div>
       </div>
     </div>
   </figure>
