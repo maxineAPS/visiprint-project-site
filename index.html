@@ -216,7 +216,7 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
         </span>
         <span class="label" style="margin-left:10px">Filament</span>
         <span class="seg" data-group="tmat">
-          <button data-v="pink" class="on"><span class="swatch" style="background:#c2185b"></span>Pink</button><button data-v="silver"><span class="swatch" style="background:#9a9ea3"></span>Silver</button><button data-v="blue"><span class="swatch" style="background:#1f4fa3"></span>Blue</button>
+          <button data-v="pink" class="on"><span class="swatch" style="background:#c2185b"></span>Pink</button><button data-v="silver"><span class="swatch" style="background:#9a9ea3"></span>Silver</button><button data-v="blue"><span class="swatch" style="background:#1f4fa3"></span>Blue</button><button data-v="clear"><span class="swatch" style="background:#eef2f4"></span>Clear</button>
         </span>
       </div>
       <div class="trio">
@@ -497,7 +497,7 @@ function updTeaser() {
 }
 seg('tobj', (v) => { T.obj = v; updTeaser(); });
 seg('tmat', (v) => { T.mat = v; updTeaser(); });
-whenIdle(() => preload(['octopus', 'whistle', 'cylinder'].flatMap((o) => ['pink', 'silver', 'blue'].flatMap((m) => [`assets/prev_${o}_${m}.webp`, `assets/real_${o}_${m}.webp`]))));
+whenIdle(() => preload(['octopus', 'whistle', 'cylinder'].flatMap((o) => ['pink', 'silver', 'blue', 'clear'].flatMap((m) => [`assets/prev_${o}_${m}.webp`, `assets/real_${o}_${m}.webp`]))));
 
 // ---------- compare slider ----------
 (function () {
