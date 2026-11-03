@@ -79,6 +79,26 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
 .btn.ghost { background: #fff; color: var(--text); }
 .btn:disabled { opacity: 0.45; cursor: default; }
 .status { font-size: 13px; color: var(--muted); margin-left: 8px; }
+/* Python cells: the release's code, editable and runnable in the browser */
+.pycell { margin-top: 14px; border-top: 1px solid var(--rule); padding-top: 12px; }
+.pybar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-bottom: 8px; }
+.pybar .label { text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-size: 11.5px; }
+.pystate { flex: 1; min-width: 0; font-size: 12.5px; color: var(--muted); }
+.btn.pybtn { font-size: 13px; padding: 5px 12px; }
+.code { display: grid; overflow-x: auto; background: #fff; border-radius: 8px; font-family: var(--mono); font-size: 12.5px; line-height: 1.55; }
+.code:focus-within { box-shadow: 0 0 0 2px var(--accent-soft); }
+.code > pre, .code > textarea { grid-area: 1 / 1; margin: 0; padding: 10px 12px; border: 0; font: inherit; line-height: inherit; white-space: pre; tab-size: 4; min-width: 100%; box-sizing: border-box; }
+.code > pre { color: #2a2a2a; pointer-events: none; }
+.code > textarea { color: transparent; background: transparent; caret-color: var(--text); resize: none; overflow: hidden; outline: none; }
+.code .k { color: #9a3b26; } .code .s { color: #2f6b3a; } .code .c { color: #8c8c8c; font-style: italic; } .code .n { color: #1f5aa0; } .code .f { color: #6a3d9a; }
+.pyfn { margin-top: 8px; font-size: 13px; }
+.pyfn summary { cursor: pointer; color: var(--muted); padding: 4px 0; }
+.pyfn summary code { font-family: var(--mono); font-size: 12.5px; color: var(--text); }
+.pyfn .code { margin-top: 6px; }
+.pyfn .src { display: block; font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+.pyout { font-family: var(--mono); font-size: 12px; color: #444; margin: 8px 0 0; white-space: pre-wrap; line-height: 1.5; }
+.pyout:empty { display: none; }
+.pyout .err { color: #a3261b; }
 .compare { position: relative; overflow: hidden; border-radius: 10px; background: #fff; user-select: none; touch-action: pan-y; }
 .compare { cursor: ew-resize; }
 .compare:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
@@ -122,6 +142,10 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
   .trio .tag { font-size: 10px; padding: 2px 5px; left: 4px; top: 4px; }
   pre.bib { padding: 44px 14px 14px; font-size: 11.5px; }
   .log { font-size: 10.5px; white-space: pre-wrap; }
+  .code { font-size: 11.5px; }
+  .pystate { order: 9; flex-basis: 100%; }
+  .pybar .label { flex: 1; }
+  .code > pre, .code > textarea { padding: 8px 10px; }
 }
 </style>
 </head>
@@ -263,7 +287,7 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
 
   <figure>
     <div class="figbox">
-      <div class="controls"><span class="label">Live · runs in your browser</span>
+      <div class="controls"><span class="label" id="c-mode">Live · runs in your browser</span>
         <span class="seg" data-group="cobj"><button data-v="boat" class="on">Boat</button><button data-v="octopus">Octopus</button></span>
       </div>
       <div class="sliderrow"><span>Lower density</span><input type="range" id="c-lo" min="0.02" max="0.4" step="0.01" value="0.12"><output id="c-lo-o">0.12</output></div>
@@ -274,12 +298,15 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
         <div class="stage"><canvas id="c-out"></canvas><span class="stage-tag" id="c-tag">Adaptive edges</span></div>
       </div>
       <div class="log" id="c-log"></div>
+      <div class="pycell" id="py-canny"></div>
     </div>
-    <figcaption><b>Adaptive Canny, live.</b> Your browser runs the same search as the pipeline (Gaussian blur σ = 0.8,
-      Sobel gradients, Canny with L2 gradients and a low/high ratio of 0.25, removal of specks smaller than 3 pixels,
-      up to 8 bisection steps) on a 512 px copy of the screenshot.<sup class="fn" title="The pipeline runs at 1024 px; this figure uses 512 px to stay fast on phones.">1</sup>
+    <figcaption><b>Adaptive Canny, live.</b> The figure runs <code>get_adaptive_canny_edges()</code> from the public
+      release (Gaussian blur σ = 0.8, Sobel gradients, Canny with L2 gradients and a low/high ratio of 0.25, removal of
+      specks smaller than 3 pixels, up to 8 bisection steps) on a 512 px copy of the screenshot.<sup class="fn" title="The pipeline runs at 1024 px; this figure uses 512 px to stay fast on phones.">1</sup>
       Move the band to see the search settle on a different threshold, or set a fixed threshold to see what a single
-      global value does to the boat and the octopus.</figcaption>
+      global value does to the boat and the octopus. The Python under the figure is what runs: edit the call or the
+      function and press Run. Until Python has loaded in your browser (about 21 MB, once), a JavaScript copy of the same
+      steps draws the figure.</figcaption>
   </figure>
 
   <h2 id="s4"><span class="num">4</span>Painting the material in: diffusion with an image prompt</h2>
@@ -329,7 +356,7 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
 
   <figure>
     <div class="figbox">
-      <div class="controls"><span class="label">Live · runs in your browser</span></div>
+      <div class="controls"><span class="label" id="cc-mode">Live · runs in your browser</span></div>
       <div class="sliderrow"><span>Color influence</span><input type="range" id="cc-col" min="0" max="1" step="0.01" value="0.8"><output id="cc-col-o">0.80</output></div>
       <div class="sliderrow"><span>Luminance influence</span><input type="range" id="cc-lum" min="0" max="1" step="0.01" value="0.6"><output id="cc-lum-o">0.60</output></div>
       <div class="trio" style="margin-top:12px">
@@ -337,10 +364,11 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
         <div class="cell"><img loading="lazy" decoding="async" src="assets/raw_octopus_pink.webp" alt="Raw diffusion output" width="858" height="742"><span class="tag">Before correction</span></div>
         <div class="cell"><canvas id="cc-out" style="width:100%;height:100%;object-fit:cover"></canvas><span class="tag">After correction</span></div>
       </div>
+      <div class="pycell" id="py-cc"></div>
     </div>
     <figcaption><b>Colour correction, live.</b> The middle image is the diffusion output before correction (generated with
-      Color Influence 0). The right image applies the formula above in your browser with your settings. At the defaults it
-      matches what the pipeline produces.<sup class="fn" title="The browser resamples images slightly differently from the pipeline, so pixels can differ by one or two levels out of 255.">3</sup></figcaption>
+      Color Influence 0). The right image is <code>match_color_profile()</code> from the public release, run in your browser with
+      your settings; the Python is under the figure.<sup class="fn" title="Until Python has loaded, a JavaScript copy of the formula draws the figure. It resamples the exemplar slightly differently from the pipeline, so its pixels can differ by one or two levels out of 255.">3</sup></figcaption>
   </figure>
 
   <h2 id="s6"><span class="num">6</span>Optional: teaching SDXL what prints look like</h2>
@@ -406,7 +434,7 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
 }</pre></div>
   <footer>Notes: <sup>1</sup> The pipeline runs at 1024 px; the live edge figure uses 512 px to stay fast on phones.
     <sup>2</sup> Cheng et al., <i>ZeST: Zero-Shot Material Transfer from a Single Image</i>, ECCV 2024.
-    <sup>3</sup> Browser image resampling differs slightly from the pipeline's, so pixels can differ by one or two levels out of 255.
+    <sup>3</sup> Until Python has loaded, a JavaScript copy of the formula draws the figure; it resamples the exemplar slightly differently from the pipeline, so its pixels can differ by one or two levels out of 255.
     Slicer screenshots of models from Thingiverse.</footer>
 </main>
 
@@ -534,18 +562,28 @@ async function prepCanny(obj) {
   cx.clearRect(0, 0, CW, CW); cx.drawImage(msk, 0, 0, CW, CW); const mp = cx.getImageData(0, 0, CW, CW).data;
   const N = CW * CW, gray = new Float32Array(N), mask = new Uint8Array(N);
   for (let i = 0; i < N; i++) { gray[i] = Math.round(0.299 * px[4 * i] + 0.587 * px[4 * i + 1] + 0.114 * px[4 * i + 2]); mask[i] = mp[4 * i] > 128 ? 1 : 0; }
+  const d = { px, gray, mask };
+  // input canvas: decoloured object
+  const ic = $('c-in'); ic.width = CW; ic.height = CW; const ix = ic.getContext('2d'); const id = ix.createImageData(CW, CW);
+  for (let i = 0; i < N; i++) { const v = mask[i] ? gray[i] : null; id.data[4 * i] = v ?? px[4 * i]; id.data[4 * i + 1] = v ?? px[4 * i + 1]; id.data[4 * i + 2] = v ?? px[4 * i + 2]; id.data[4 * i + 3] = 255; }
+  d.aspect = `${img.naturalWidth} / ${img.naturalHeight}`; d.inputImage = id; C.data[obj] = d; return d;
+}
+function jsGradients(d) {  // only the JavaScript copy needs these
+  if (d.gx) return d;
+  const N = CW * CW, { gray, mask } = d;
   const inside = []; for (let i = 0; i < N; i++) if (mask[i]) inside.push(gray[i]);
   const med = percentile(inside, 50); const filled = gray.map((v, i) => (mask[i] ? v : med));
   const gb = blur(filled, CW, CW, 0.8, 5); const { gx, gy } = sobel(gb, CW, CW);
   const mags = []; for (let i = 0; i < N; i++) if (mask[i]) mags.push(Math.hypot(gx[i], gy[i]));
   const er = new Uint8Array(N); let area = 0;
   for (let y = 1; y < CW - 1; y++) for (let x = 1; x < CW - 1; x++) { let ok = 1; for (let dy = -1; dy <= 1 && ok; dy++) for (let dx = -1; dx <= 1; dx++) if (!mask[(y + dy) * CW + x + dx]) { ok = 0; break; } er[y * CW + x] = ok; area += ok; }
-  const d = { px, gray, mask, gx, gy, mags, er, area: Math.max(1, area) };
-  // input canvas: decoloured object
-  const ic = $('c-in'); ic.width = CW; ic.height = CW; const ix = ic.getContext('2d'); const id = ix.createImageData(CW, CW);
-  for (let i = 0; i < N; i++) { const v = mask[i] ? gray[i] : null; id.data[4 * i] = v ?? px[4 * i]; id.data[4 * i + 1] = v ?? px[4 * i + 1]; id.data[4 * i + 2] = v ?? px[4 * i + 2]; id.data[4 * i + 3] = 255; }
-  d.aspect = `${img.naturalWidth} / ${img.naturalHeight}`; d.inputImage = id; C.data[obj] = d; return d;
+  return Object.assign(d, { gx, gy, mags, er, area: Math.max(1, area) });
 }
+// One log line per search step; the Python and the JavaScript versions share them.
+const stepLine = (it, p, t, dens, lo, hi) => `step ${it + 1}: percentile ${p.toFixed(2).padStart(6)}  threshold ${t.toFixed(1).padStart(6)}  density ${(100 * dens).toFixed(1).padStart(5)}%${
+  dens >= lo && dens <= hi ? '  <span class="hit">in band, stop</span>' : dens < lo ? '  too sparse' : '  too dense'}`;
+const fixedLine = (t, dens) => `fixed high threshold ${t.toFixed(1)}  ->  edge density ${(100 * dens).toFixed(1)}%`;
+const BAND_MISS = '<span class="hit">no threshold in the band after 8 steps: the pipeline keeps this last result</span>';
 function edgesAt(d, tHigh) {
   const e = canny(d.gx, d.gy, CW, CW, 0.25 * tHigh, tHigh);
   for (let i = 0; i < e.length; i++) e[i] &= d.er[i];
@@ -558,21 +596,22 @@ async function runCanny() {
   const d = await prepCanny(C.obj); $('c-in').getContext('2d').putImageData(d.inputImage, 0, 0);
   for (const id of ['c-in', 'c-out']) $(id).style.aspectRatio = d.aspect;
   const lo = +$('c-lo').value, hi = Math.max(+$('c-hi').value, lo + 0.01), fixed = +$('c-fixed').value;
+  $('c-tag').textContent = fixed > 0 ? 'Fixed-threshold edges' : 'Adaptive edges';
+  if (PY.state === 'ready') {  // the release's Python draws the figure (the cell under it)
+    CELLS.canny.follow(); cannyBusy = false; if (cannyAgain) { cannyAgain = false; runCanny(); } return;
+  }
+  jsGradients(d); $('c-mode').textContent = PY.state === 'failed' ? 'Live · JavaScript copy' : 'Live · JavaScript copy while Python loads';
   const lines = []; let res;
   if (fixed > 0) {
-    res = edgesAt(d, fixed * 2.55);
-    lines.push(`fixed high threshold ${(fixed * 2.55).toFixed(1)}  ->  edge density ${(100 * res.dens).toFixed(1)}%`);
-    $('c-tag').textContent = 'Fixed-threshold edges';
+    res = edgesAt(d, fixed * 2.55); lines.push(fixedLine(fixed * 2.55, res.dens));
   } else {
     let pLo = 60, pHi = 99;
     for (let it = 0; it < 8; it++) {
       const p = 0.5 * (pLo + pHi); const tHigh = Math.max(1, Math.min(255, percentile(d.mags, p)));
-      res = edgesAt(d, tHigh); const dens = res.dens; const ok = dens >= lo && dens <= hi;
-      lines.push(`step ${it + 1}: percentile ${p.toFixed(2).padStart(6)}  threshold ${tHigh.toFixed(1).padStart(6)}  density ${(100 * dens).toFixed(1).padStart(5)}%${ok ? '  <span class="hit">in band, stop</span>' : dens < lo ? '  too sparse' : '  too dense'}`);
-      if (dens < lo) pHi = p; else if (dens > hi) pLo = p; else break;
-      if (it === 7) lines.push('<span class="hit">no threshold in the band after 8 steps: the pipeline keeps this last result</span>');
+      res = edgesAt(d, tHigh); lines.push(stepLine(it, p, tHigh, res.dens, lo, hi));
+      if (res.dens < lo) pHi = p; else if (res.dens > hi) pLo = p; else break;
+      if (it === 7) lines.push(BAND_MISS);
     }
-    $('c-tag').textContent = 'Adaptive edges';
   }
   const oc = $('c-out'); oc.width = CW; oc.height = CW; const ox = oc.getContext('2d'); const od = ox.createImageData(CW, CW);
   for (let i = 0; i < CW * CW; i++) { const v = res.edges[i] ? 255 : 0; od.data[4 * i] = od.data[4 * i + 1] = od.data[4 * i + 2] = v; od.data[4 * i + 3] = 255; }
@@ -631,7 +670,9 @@ async function prepCC() {
   const out = $('cc-out'); out.width = W; out.height = H; CC.ctx = out.getContext('2d'); CC.img = CC.ctx.createImageData(W, H);
 }
 function runCC() {
-  if (!CC.ctx) return; const blend = +$('cc-col').value, cw = +$('cc-lum').value, o = CC.img.data, t = CC.t;
+  if (!CC.ctx) return;
+  if (PY.state === 'ready') return CELLS.cc.follow();
+  $('cc-mode').textContent = PY.state === 'failed' ? 'Live · JavaScript copy' : 'Live · JavaScript copy while Python loads'; const blend = +$('cc-col').value, cw = +$('cc-lum').value, o = CC.img.data, t = CC.t;
   // Same arithmetic as match_color_profile(): the matched value is blended before clipping
   // (pixels outside the mask keep the diffusion output, since matched = target there).
   for (let i = 0; i < t.length; i++) o[i] = t[i];
@@ -641,6 +682,182 @@ function runCC() {
 }
 for (const id of ['cc-col', 'cc-lum']) $(id).addEventListener('input', () => { $(id + '-o').textContent = (+$(id).value).toFixed(2); runCC(); });
 new IntersectionObserver(async (es, ob) => { if (es.some((e) => e.isIntersecting)) { ob.disconnect(); await prepCC(); runCC(); } }, { rootMargin: '400px' }).observe($('cc-out'));
+
+// ---------- the release's Python, in your browser ----------
+// A worker runs Pyodide (CPython compiled to WebAssembly) with NumPy, OpenCV and Pillow. The figures call
+// get_adaptive_canny_edges() and match_color_profile() from py/visiprint_pipeline.py, a byte-for-byte copy of
+// the public release. The JavaScript copies above draw only until Python is ready, or if it cannot start.
+const RELEASE = 'https://github.com/maxineAPS/VisiPrint/blob/167ba8c4ff4ab75bd836fb468a257dc0f6a80a7b/visiprint_pipeline.py';
+const PY = { state: 'idle', worker: null, waiting: {}, id: 0, status: '' };
+const CELLS = {};
+const SOURCES = { release: fetch('py/visiprint_pipeline.py').then((r) => r.text()), helpers: fetch('py/page_helpers.py').then((r) => r.text()) };
+function defOf(src, name) {  // a top-level function's text and line range, as ast.get_source_segment gives it
+  const L = src.split('\n'), a = L.findIndex((l) => l.startsWith(`def ${name}(`)); let b = a + 1;
+  while (b < L.length && (L[b] === '' || /^\s/.test(L[b]))) b++;
+  while (!L[b - 1].trim()) b--;
+  return { src: L.slice(a, b).join('\n'), first: a + 1, last: b };
+}
+function setPyStatus(text) { PY.status = text; document.querySelectorAll('.pystate').forEach((e) => { e.textContent = text; }); }
+function pyBoot() {
+  if (PY.state !== 'idle') return; PY.state = 'loading'; setPyStatus('Loading Python…');
+  try { PY.worker = new Worker('py/worker.js'); } catch (e) { return pyFailed(e.message); }
+  PY.worker.onmessage = ({ data: m }) => {
+    if (m.type === 'status') setPyStatus(m.text);
+    else if (m.type === 'failed') pyFailed(m.text);
+    else if (m.type === 'ready') { PY.state = 'ready'; setPyStatus(`${m.versions}, running in your browser`); Object.values(CELLS).forEach((c) => c.takeOver()); }
+    else if (m.type === 'result') { const cb = PY.waiting[m.id]; delete PY.waiting[m.id]; if (cb) cb(m); }
+  };
+  PY.worker.onerror = (e) => { e.preventDefault(); pyFailed(e.message || 'the worker stopped'); };
+  PY.worker.postMessage({ type: 'boot' });
+}
+function pyStop(why) {  // ends the worker; runs still waiting report `why`
+  if (PY.worker) PY.worker.terminate(); PY.worker = null;
+  const w = PY.waiting; PY.waiting = {}; Object.values(w).forEach((cb) => cb({ error: why, steps: [], stdout: '' }));
+}
+function pyFailed(why) {
+  pyStop(`Python stopped: ${why}`); PY.state = 'failed';
+  setPyStatus('Python could not start in this browser, so the figures use the JavaScript copy.');
+  document.querySelectorAll('.pycell [data-act=run]').forEach((b) => { b.disabled = true; });
+  if (C.data[C.obj]) runCanny();
+  runCC();
+}
+function pyRun(fn, call) {
+  return new Promise((res) => { const id = ++PY.id; PY.waiting[id] = res; PY.worker.postMessage({ type: 'run', id, fn: fn.src, first: fn.first, call }); });
+}
+
+// Python syntax colouring for the editable cells (a <pre> under a transparent <textarea>).
+const PY_KW = new Set('False None True and as assert async await break class continue def del elif else except finally for from global if import in is lambda nonlocal not or pass raise return try while with yield'.split(' '));
+const escHTML = (t) => String(t).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+function highlight(src) {
+  const re = /((?:[rRbBuUfF]{1,2})?(?:"""[\s\S]*?(?:"""|$)|'''[\s\S]*?(?:'''|$)|"(?:\\.|[^"\\\n])*"?|'(?:\\.|[^'\\\n])*'?))|(#[^\n]*)|(\b\d[\d_]*\.?\d*(?:[eE][-+]?\d+)?)|([A-Za-z_]\w*)(?=(\s*\()?)/g;
+  let out = '', last = 0;
+  for (const m of src.matchAll(re)) {
+    out += escHTML(src.slice(last, m.index)); last = m.index + m[0].length;
+    const cls = m[1] ? 's' : m[2] ? 'c' : m[3] ? 'n' : PY_KW.has(m[4]) ? 'k' : m[5] !== undefined ? 'f' : '';
+    out += cls ? `<span class="${cls}">${escHTML(m[0])}</span>` : escHTML(m[0]);
+  }
+  return out + escHTML(src.slice(last));
+}
+function codeEditor(host, value, { label, onRun, readOnly } = {}) {
+  host.innerHTML = '<pre aria-hidden="true"></pre><textarea spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off"></textarea>';
+  const pre = host.firstChild, ta = host.lastChild, paint = () => { pre.innerHTML = highlight(ta.value) + '\n'; };
+  ta.setAttribute('aria-label', label); ta.readOnly = !!readOnly; ta.value = value; paint();
+  ta.addEventListener('input', paint);
+  ta.addEventListener('focus', pyBoot);
+  ta.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); if (onRun) onRun(); return; }
+    if (e.key === 'Enter' && !e.shiftKey && !readOnly) {  // keep the indentation (one level deeper after a colon)
+      const at = ta.selectionStart, line = ta.value.slice(ta.value.lastIndexOf('\n', at - 1) + 1, at);
+      let ind = line.match(/^[ \t]*/)[0]; if (/:\s*(#.*)?$/.test(line)) ind += '    ';
+      e.preventDefault();
+      if (!document.execCommand('insertText', false, '\n' + ind)) { ta.setRangeText('\n' + ind, at, ta.selectionEnd, 'end'); paint(); }
+    }
+  });
+  return { get value() { return ta.value; }, set value(v) { ta.value = v; paint(); } };
+}
+
+// One cell per live figure: a call that the figure's controls keep in step, the release function (editable)
+// and the page's helpers. Pressing Run, or moving a control once Python is ready, redraws the figure.
+function pyCell(key, { fnName, helpers, callFor, patch, render, visible, readBack }) {
+  const root = $(`py-${key}`), names = helpers.map((h) => `<code>${h}()</code>`);
+  root.innerHTML = `<div class="pybar"><span class="label">Python</span><span class="pystate">${PY.status}</span>
+      <button class="btn ghost pybtn" data-act="reset" type="button">Reset</button>
+      <button class="btn pybtn" data-act="run" type="button" title="Run (Ctrl+Enter or ⌘+Enter)">Run</button></div>
+    <div class="code" data-cell="call"></div>
+    <pre class="pyout" aria-live="polite"></pre>
+    <details class="pyfn"><summary>The release's <code>${fnName}()</code>, editable</summary>
+      <span class="src">Loading visiprint_pipeline.py…</span><div class="code" data-cell="fn"></div></details>
+    <details class="pyfn"><summary>What ${names.slice(0, -1).join(', ')} and ${names[names.length - 1]} do</summary>
+      <span class="src">Small helpers of this page (py/page_helpers.py). They load the figure's images and hand the result to the figure.</span>
+      <div class="code" data-cell="helpers"></div></details>`;
+  const out = root.querySelector('.pyout'), runBtn = root.querySelector('[data-act=run]');
+  const call = codeEditor(root.querySelector('[data-cell=call]'), callFor(), { label: `Python call that draws the ${key === 'cc' ? 'colour' : 'edge'} figure`, onRun: () => run() });
+  let fn = null, fnEd = null, busy = false, again = false, pending = false, drawn = false, halted = false;
+  Promise.all([SOURCES.release, SOURCES.helpers]).then(([rel, hel]) => {
+    fn = defOf(rel, fnName);
+    root.querySelector('.pyfn .src').innerHTML = `visiprint_pipeline.py, lines ${fn.first}–${fn.last}, as in the <a href="${RELEASE}#L${fn.first}-L${fn.last}" target="_blank" rel="noopener">public repository</a>. Edits apply when you press Run.`;
+    fnEd = codeEditor(root.querySelector('[data-cell=fn]'), fn.src, { label: `Python source of ${fnName}`, onRun: () => run() });
+    codeEditor(root.querySelector('[data-cell=helpers]'), helpers.map((h) => defOf(hel, h).src).join('\n\n\n'), { label: 'Python helpers of this page', readOnly: true });
+    if (pending && PY.state === 'ready') { pending = false; run(); }
+  }).catch(() => { root.querySelector('.pyfn .src').textContent = 'Could not load visiprint_pipeline.py.'; });
+  const say = (html) => { out.innerHTML = html; };
+  async function run() {
+    if (PY.state === 'failed') return;
+    if (PY.state !== 'ready' || !fn) { pending = true; pyBoot(); say('Python is still loading; this runs as soon as it is ready.'); return; }
+    if (busy) { again = true; return; }
+    busy = true; halted = false;
+    const slow = setTimeout(() => { runBtn.textContent = 'Stop'; runBtn.dataset.act = 'stop'; }, 5000);
+    if (readBack) readBack(call.value);
+    const r = await pyRun({ src: fnEd.value, first: fn.first }, call.value);
+    clearTimeout(slow); runBtn.textContent = 'Run'; runBtn.dataset.act = 'run'; busy = false;
+    if (r.image) { render(r); drawn = true; }
+    say((r.stdout ? escHTML(r.stdout) : '') + (r.error ? `<span class="err">${escHTML(r.error)}</span>`
+      : r.image ? `ran in ${Math.round(r.ms)} ms` : 'ran, but nothing was drawn: call show(image) to draw in the figure'));
+    if (again) { again = false; run(); }
+  }
+  root.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.act === 'run') run();
+    else if (b.dataset.act === 'stop') { halted = true; pyStop('Stopped. Python is restarting, so the next run takes a few seconds.'); PY.state = 'idle'; pyBoot(); }
+    else if (b.dataset.act === 'reset') { call.value = callFor(); if (fnEd) fnEd.value = fn.src; say(''); run(); }
+  });
+  return {
+    follow() { call.value = patch(call.value); run(); },  // a control moved: update the call, then run it
+    // Python just became ready: redraw from Python (but after a Stop, wait for the reader to press Run)
+    takeOver() { if (!halted && (pending || drawn || visible())) { pending = false; call.value = patch(call.value); run(); } },
+  };
+}
+// Move a slider to a value typed into a cell (when it is in the slider's range).
+function setSlider(id, v, fmt) {
+  const el = $(id); if (!Number.isFinite(v) || v < +el.min || v > +el.max) return;
+  el.value = v; $(id + '-o').textContent = fmt(el.value);
+}
+const drawRGBA = (canvas, [w, h, px]) => {
+  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+  canvas.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(px.buffer, px.byteOffset, px.length), w, h), 0, 0);
+};
+function cannyLine() {
+  const lo = +$('c-lo').value, hi = Math.max(+$('c-hi').value, lo + 0.01), fixed = +$('c-fixed').value;
+  return fixed > 0 ? `edges = get_adaptive_canny_edges(target, mask, max_iters=1, p_range=fixed_threshold(target, mask, ${(fixed * 2.55).toFixed(1)}))`
+    : `edges = get_adaptive_canny_edges(target, mask, density_bounds=(${lo.toFixed(2)}, ${hi.toFixed(2)}))`;
+}
+CELLS.canny = pyCell('canny', {
+  fnName: 'get_adaptive_canny_edges', helpers: ['load', 'show', 'fixed_threshold'],
+  callFor: () => `target = load("canny_${C.obj}_input.webp", size=512)   # the slicer screenshot\nmask = load("canny_${C.obj}_mask.webp", "L", size=512)  # the object mask\n${cannyLine()}\nshow(edges)`,
+  patch: (code) => code.replace(/canny_(boat|octopus)_/g, `canny_${C.obj}_`)
+    .replace(/^([ \t]*)edges = get_adaptive_canny_edges\(.*\)[ \t]*$/m, (_, ind) => ind + cannyLine()),
+  visible: () => !!C.data[C.obj],
+  readBack(code) {
+    const m = code.match(/density_bounds=\(\s*([\d.]+)\s*,\s*([\d.]+)\s*\)/);
+    const f = code.match(/fixed_threshold\([^,]*,[^,]*,\s*([\d.]+)\s*\)/), fixedFmt = (v) => (+v === 0 ? 'off' : (v * 2.55).toFixed(0));
+    if (f) setSlider('c-fixed', Math.max(1, Math.round(+f[1] / 2.55)), fixedFmt);
+    else if (m) { setSlider('c-fixed', 0, fixedFmt); setSlider('c-lo', +m[1], (v) => (+v).toFixed(2)); setSlider('c-hi', +m[2], (v) => (+v).toFixed(2)); }
+  },
+  render(r) {
+    drawRGBA($('c-out'), r.image);
+    const fixed = +$('c-fixed').value > 0, last = r.steps[r.steps.length - 1];
+    const lines = fixed && r.steps.length === 1 ? [fixedLine(last[1], last[2])] : r.steps.map(([p, t, dens, lo, hi], i) => stepLine(i, p, t, dens, lo, hi));
+    if (!fixed && last && r.steps.length === last[5] && !(last[2] >= last[3] && last[2] <= last[4])) lines.push(BAND_MISS);
+    $('c-log').innerHTML = lines.join('\n'); $('c-mode').textContent = 'Live · the release’s Python';
+  },
+});
+const ccLine = () => `show(match_color_profile(exemplar, mask, raw, blend_factor=${(+$('cc-col').value).toFixed(2)}, contrast_weight=${(+$('cc-lum').value).toFixed(2)}))`;
+CELLS.cc = pyCell('cc', {
+  fnName: 'match_color_profile', helpers: ['load', 'show'],
+  callFor: () => `exemplar = load("exemplar_pink.webp")   # photo of the filament\nmask = load("canny_octopus_mask.webp")  # the object mask\nraw = load("raw_octopus_pink.webp")     # diffusion output before correction\n${ccLine()}`,
+  patch: (code) => code.replace(/blend_factor=[\d.]+/, `blend_factor=${(+$('cc-col').value).toFixed(2)}`)
+    .replace(/contrast_weight=[\d.]+/, `contrast_weight=${(+$('cc-lum').value).toFixed(2)}`),
+  visible: () => !!CC.ctx,
+  readBack(code) {
+    const b = code.match(/blend_factor=([\d.]+)/), c = code.match(/contrast_weight=([\d.]+)/);
+    if (b) setSlider('cc-col', +b[1], (v) => (+v).toFixed(2));
+    if (c) setSlider('cc-lum', +c[1], (v) => (+v).toFixed(2));
+  },
+  render(r) { drawRGBA($('cc-out'), r.image); $('cc-mode').textContent = 'Live · the release’s Python'; },
+});
+// Start Python once the first screen has loaded, so it is usually ready before a reader reaches the figures.
+// With data saver on, it waits until the reader runs or edits a cell.
+whenIdle(() => { if (!(navigator.connection && navigator.connection.saveData)) pyBoot(); });
 
 // ---------- user study bars ----------
 new IntersectionObserver((es, ob) => { if (es.some((e) => e.isIntersecting)) { ob.disconnect(); document.querySelectorAll('#bars .fill').forEach((f) => { f.style.width = f.dataset.w + '%'; }); } }, { threshold: 0.4 }).observe($('bars'));
