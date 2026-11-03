@@ -27,6 +27,10 @@ a:hover { border-bottom-color: var(--accent); color: var(--accent); }
 .col { max-width: var(--col); margin: 0 auto; padding: 0 20px; }
 .wide { max-width: var(--wide); margin: 0 auto; padding: 0 20px; }
 header.hero { padding-top: 64px; padding-bottom: 8px; }
+.report { max-width: var(--col); margin: 16px auto 0; padding: 9px 14px; background: var(--accent-soft); border-radius: 10px; font-size: 14px; line-height: 1.5; }
+.report a { color: var(--text); font-weight: 600; }
+.report + header.hero { padding-top: 32px; }
+@media (max-width: 720px) { .report { margin: 12px 16px 0; font-size: 13.5px; } }
 h1 { font-size: 40px; line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 14px; font-weight: 700; }
 .venue { font-style: italic; color: var(--muted); font-size: 20px; margin: 0 0 18px; }
 .authors { font-size: 18px; margin: 0 0 6px; line-height: 1.9; }
@@ -157,6 +161,8 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
 </style>
 </head>
 <body>
+<p class="report" id="report">This live walkthrough is new. If something looks wrong or does not work, please
+  <a id="report-link" href="mailto:max1@mit.edu?subject=VisiPrint%20walkthrough%3A%20bug%20report">report it</a> (max1@mit.edu).</p>
 
 <header class="hero col">
   <h1>VisiPrint: Previewing 3D-Print Appearance from Real Material Samples</h1>
@@ -446,6 +452,12 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
 </main>
 
 <script>
+// ---------- bug report link: the email names the page and the browser ----------
+(function () {
+  const body = `What happened:\n\n\nWhat you expected:\n\n\n---\nPage: ${location.href}\nBrowser: ${navigator.userAgent}\nScreen: ${innerWidth}x${innerHeight}`;
+  document.getElementById('report-link').href = 'mailto:max1@mit.edu?subject=' + encodeURIComponent('VisiPrint walkthrough: bug report') + '&body=' + encodeURIComponent(body);
+})();
+
 // ---------- small helpers ----------
 const $ = (id) => document.getElementById(id);
 // Accessibility: name every slider after its row label; option buttons report which one is selected.
