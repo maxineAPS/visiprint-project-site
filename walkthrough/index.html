@@ -161,8 +161,7 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
 </style>
 </head>
 <body>
-<p class="report" id="report">This live walkthrough is new. Please
-  <a id="report-link" href="mailto:max1@mit.edu?subject=Bug%20report%3A%20VisiPrint%20walkthrough">report bugs or issues</a> to max1@mit.edu.</p>
+<p class="report" id="report">This live walkthrough is new. Please report bugs or issues to max1@mit.edu.</p>
 
 <header class="hero col">
   <h1>VisiPrint: Previewing 3D-Print Appearance from Real Material Samples</h1>
@@ -452,12 +451,6 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
 </main>
 
 <script>
-// ---------- bug report link: the email names the page and the browser ----------
-(function () {
-  const body = `What happened:\n\n\nWhat you expected:\n\n\n---\nPage: ${location.href}\nBrowser: ${navigator.userAgent}\nScreen: ${innerWidth}x${innerHeight}`;
-  document.getElementById('report-link').href = 'mailto:max1@mit.edu?subject=' + encodeURIComponent('Bug report: VisiPrint walkthrough') + '&body=' + encodeURIComponent(body);
-})();
-
 // ---------- small helpers ----------
 const $ = (id) => document.getElementById(id);
 // Accessibility: name every slider after its row label; option buttons report which one is selected.
