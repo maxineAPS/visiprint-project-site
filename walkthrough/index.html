@@ -70,7 +70,6 @@ figcaption b { color: var(--text); font-weight: 600; }
 .steps button.on .s-d { display: block; }
 .sliderrow { display: grid; grid-template-columns: 150px 1fr 48px; align-items: center; gap: 10px; font-size: 13.5px; margin: 6px 0; }
 .sliderrow output { font-family: var(--mono); font-size: 13px; text-align: right; }
-.sliderrow.unused { opacity: 0.4; }
 input[type=range] { width: 100%; accent-color: var(--accent); }
 .canvas2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .canvas2 .stage canvas { width: 100%; display: block; }
@@ -317,10 +316,8 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
     <div class="figbox">
       <div class="controls"><span class="label" id="c-mode">Live · runs in your browser</span>
         <span class="seg" data-group="cobj"><button data-v="boat" class="on">Boat</button><button data-v="octopus">Octopus</button></span>
+        <span class="seg" data-group="cthr"><button data-v="fixed">Fixed threshold</button><button data-v="adaptive" class="on">Adaptive</button></span>
       </div>
-      <div class="sliderrow"><span>Lower density</span><input type="range" id="c-lo" min="0.02" max="0.4" step="0.01" value="0.12"><output id="c-lo-o">0.12</output></div>
-      <div class="sliderrow"><span>Upper density</span><input type="range" id="c-hi" min="0.05" max="0.6" step="0.01" value="0.25"><output id="c-hi-o">0.25</output></div>
-      <div class="sliderrow"><span>Fixed threshold instead</span><input type="range" id="c-fixed" min="0" max="100" step="1" value="0"><output id="c-fixed-o">off</output></div>
       <div class="canvas2" style="margin-top:12px">
         <div class="stage"><canvas id="c-in"></canvas><span class="stage-tag">Input (decoloured)</span></div>
         <div class="stage"><canvas id="c-out"></canvas><span class="stage-tag" id="c-tag">Adaptive edges</span></div>
@@ -331,10 +328,10 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
     <figcaption><b>Adaptive Canny, live.</b> The figure runs <code>get_adaptive_canny_edges()</code> from the public
       release (Gaussian blur σ = 0.8, Sobel gradients, Canny with L2 gradients and a low/high ratio of 0.25, removal of
       specks smaller than 3 pixels, up to 8 bisection steps) on a 512 px copy of the screenshot.<sup class="fn" title="The pipeline runs at 1024 px; this figure uses 512 px to stay fast on phones.">1</sup>
-      Move the band to see the search settle on a different threshold, or set a fixed threshold to see what a single
-      global value does to the boat and the octopus. The Python under the figure is what runs: edit the call or the
-      function and press Run. Until Python has loaded in your browser (about 21 MB, once), a JavaScript copy of the same
-      steps draws the figure.</figcaption>
+      Switch between one fixed threshold (200 on a 0–255 scale, which suits the boat) and VisiPrint's adaptive search:
+      with the fixed value the darker octopus loses most of its slicing detail, while the search picks a threshold for each
+      screenshot. The Python under the figure is what runs: edit the call or the function and press Run. Until Python has
+      loaded in your browser (about 21 MB, once), a JavaScript copy of the same steps draws the figure.</figcaption>
   </figure>
 
   <h2 id="s4"><span class="num">4</span>Painting the material in: diffusion with an image prompt</h2>
@@ -531,7 +528,7 @@ whenIdle(() => preload(['boat', 'octopus'].flatMap((o) => [0, 1, 2, 3, 4].map((s
 // Sobel magnitudes inside the mask, percentile bisection on the Canny high threshold (low = 0.25 * high),
 // Canny with L2 gradients, AND with the eroded mask, removal of components smaller than 3 px.
 const CW = 512;
-const C = { obj: 'boat', data: {} };
+const C = { obj: 'boat', mode: 'adaptive', data: {} };
 function gaussKernel(sigma, k) { const h = (k - 1) / 2, w = []; let s = 0; for (let i = 0; i < k; i++) { const v = Math.exp(-((i - h) ** 2) / (2 * sigma * sigma)); w.push(v); s += v; } return w.map((v) => v / s); }
 function blur(src, W, H, sigma, k) {
   const w = gaussKernel(sigma, k), h = (k - 1) / 2, tmp = new Float32Array(W * H), out = new Float32Array(W * H);
@@ -608,13 +605,12 @@ function jsGradients(d) {  // only the JavaScript copy needs these
   for (let y = 1; y < CW - 1; y++) for (let x = 1; x < CW - 1; x++) { let ok = 1; for (let dy = -1; dy <= 1 && ok; dy++) for (let dx = -1; dx <= 1; dx++) if (!mask[(y + dy) * CW + x + dx]) { ok = 0; break; } er[y * CW + x] = ok; area += ok; }
   return Object.assign(d, { gx, gy, mags, er, area: Math.max(1, area) });
 }
-// One log line per search step; the Python and the JavaScript versions share them.
-const stepLine = (it, p, t, dens, lo, hi) => `step ${it + 1}: percentile ${p.toFixed(2).padStart(6)}  threshold ${t.toFixed(1).padStart(6)}  density ${(100 * dens).toFixed(1).padStart(5)}%${
-  dens >= lo && dens <= hi ? '  <span class="hit">in band, stop</span>' : dens < lo ? '  too sparse' : '  too dense'}`;
-const fixedLine = (t, dens) => `fixed high threshold ${t.toFixed(1)}  ->  edge density ${(100 * dens).toFixed(1)}%`;
-const bandLine = (lo, hi) => `searching for an edge density between ${(100 * lo).toFixed(0)}% and ${(100 * hi).toFixed(0)}%`;
-const fixedNote = 'the density band is not used with a fixed threshold; move it to search again';
-const BAND_MISS = '<span class="hit">no threshold in the band after 8 steps: the pipeline keeps this last result</span>';
+// The figure compares one global threshold with the search (default band 12-25%, as in the release).
+const FIXED_T = 200, BAND = [0.12, 0.25];
+// One sentence under the figure; the Python and the JavaScript versions share it.
+const cannySummary = (fixed, t, dens, steps) => fixed
+  ? `One fixed threshold (${t.toFixed(0)}) for every screenshot: ${(100 * dens).toFixed(1)}% of the object's pixels become edges.`
+  : `VisiPrint tried ${steps} threshold${steps === 1 ? '' : 's'} and kept ${t.toFixed(0)}: ${(100 * dens).toFixed(1)}% of the object's pixels become edges (target 12 to 25%).`;
 function edgesAt(d, tHigh) {
   const e = canny(d.gx, d.gy, CW, CW, 0.25 * tHigh, tHigh);
   for (let i = 0; i < e.length; i++) e[i] &= d.er[i];
@@ -627,45 +623,32 @@ async function runCanny() {
   let d;
   try { d = await prepCanny(C.obj); } catch (e) { cannyBusy = false; return loadFailed('c-tag'); }
   showCannyInput(d);
-  const lo = +$('c-lo').value, hi = Math.max(+$('c-hi').value, lo + 0.01), fixed = +$('c-fixed').value;
-  $('c-tag').textContent = fixed > 0 ? 'Fixed-threshold edges' : 'Adaptive edges';
+  const fixed = C.mode === 'fixed';
+  $('c-tag').textContent = fixed ? 'Fixed-threshold edges' : 'Adaptive edges';
   if (PY.state === 'ready') {  // the release's Python draws the figure (the cell under it)
     CELLS.canny.follow(); cannyBusy = false; if (cannyAgain) { cannyAgain = false; runCanny(); } return;
   }
   jsGradients(d); $('c-mode').textContent = PY.state === 'failed' ? 'Live · JavaScript copy' : 'Live · JavaScript copy while Python loads';
-  const lines = []; let res;
-  if (fixed > 0) {
-    res = edgesAt(d, fixed * 2.55); lines.push(fixedLine(fixed * 2.55, res.dens), fixedNote);
-  } else {
-    let pLo = 60, pHi = 99; lines.push(bandLine(lo, hi));
+  let res, t = FIXED_T, steps = 1;
+  if (fixed) res = edgesAt(d, FIXED_T);
+  else {
+    let pLo = 60, pHi = 99;
     for (let it = 0; it < 8; it++) {
-      const p = 0.5 * (pLo + pHi); const tHigh = Math.max(1, Math.min(255, percentile(d.mags, p)));
-      res = edgesAt(d, tHigh); lines.push(stepLine(it, p, tHigh, res.dens, lo, hi));
-      if (res.dens < lo) pHi = p; else if (res.dens > hi) pLo = p; else break;
-      if (it === 7) lines.push(BAND_MISS);
+      const p = 0.5 * (pLo + pHi); t = Math.max(1, Math.min(255, percentile(d.mags, p)));
+      res = edgesAt(d, t); steps = it + 1;
+      if (res.dens < BAND[0]) pHi = p; else if (res.dens > BAND[1]) pLo = p; else break;
     }
   }
   const oc = $('c-out'); oc.width = CW; oc.height = CW; const ox = oc.getContext('2d'); const od = ox.createImageData(CW, CW);
   for (let i = 0; i < CW * CW; i++) { const v = res.edges[i] ? 255 : 0; od.data[4 * i] = od.data[4 * i + 1] = od.data[4 * i + 2] = v; od.data[4 * i + 3] = 255; }
-  ox.putImageData(od, 0, 0); $('c-log').innerHTML = lines.join('\n');
+  ox.putImageData(od, 0, 0); $('c-log').textContent = cannySummary(fixed, t, res.dens, steps);
   cannyBusy = false; if (cannyAgain) { cannyAgain = false; runCanny(); }
 }
-// Moving the band switches the fixed threshold off (the band only matters to the search), the band's
-// ends never cross, and the band rows dim while a fixed threshold is in use.
-function syncCannyControls(moved) {
-  const lo = $('c-lo'), hi = $('c-hi'), fx = $('c-fixed');
-  if (moved === 'c-lo' || moved === 'c-hi') {
-    fx.value = 0;
-    if (+lo.value >= +hi.value) {
-      if (moved === 'c-lo') hi.value = Math.min(+hi.max, +lo.value + 0.01); else lo.value = Math.max(+lo.min, +hi.value - 0.01);
-    }
-  }
-  const fixed = +fx.value > 0;
-  for (const r of [lo, hi]) { const row = r.closest('.sliderrow'); row.classList.toggle('unused', fixed); row.title = fixed ? 'Not used with a fixed threshold. Move it to search again.' : ''; }
-  $('c-lo-o').textContent = (+lo.value).toFixed(2); $('c-hi-o').textContent = (+hi.value).toFixed(2);
-  $('c-fixed-o').textContent = fixed ? (fx.value * 2.55).toFixed(0) : 'off';
+function setCannyMode(v) {
+  C.mode = v; const g = document.querySelector('.seg[data-group="cthr"]');
+  g.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.v === v)); syncPressed(g);
 }
-for (const id of ['c-lo', 'c-hi', 'c-fixed']) $(id).addEventListener('input', () => { syncCannyControls(id); runCanny(); });
+seg('cthr', (v) => { C.mode = v; runCanny(); });
 seg('cobj', (v) => { C.obj = v; runCanny(); });
 new IntersectionObserver((es, ob) => { if (es.some((e) => e.isIntersecting)) { ob.disconnect(); runCanny(); } }, { rootMargin: '400px' }).observe($('c-out'));
 
@@ -866,9 +849,8 @@ const drawRGBA = (canvas, [w, h, px]) => {
   canvas.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(px.buffer, px.byteOffset, px.length), w, h), 0, 0);
 };
 function cannyLine() {
-  const lo = +$('c-lo').value, hi = Math.max(+$('c-hi').value, lo + 0.01), fixed = +$('c-fixed').value;
-  return fixed > 0 ? `edges = get_adaptive_canny_edges(target, mask, max_iters=1, p_range=fixed_threshold(target, mask, ${(fixed * 2.55).toFixed(1)}))`
-    : `edges = get_adaptive_canny_edges(target, mask, density_bounds=(${lo.toFixed(2)}, ${hi.toFixed(2)}))`;
+  return C.mode === 'fixed' ? `edges = get_adaptive_canny_edges(target, mask, max_iters=1, p_range=fixed_threshold(target, mask, ${FIXED_T}))`
+    : 'edges = get_adaptive_canny_edges(target, mask)';
 }
 CELLS.canny = pyCell('canny', {
   fnName: 'get_adaptive_canny_edges', helpers: ['load', 'show', 'fixed_threshold'],
@@ -876,20 +858,12 @@ CELLS.canny = pyCell('canny', {
   patch: (code) => code.replace(/canny_(boat|octopus)_/g, `canny_${C.obj}_`)
     .replace(/^([ \t]*)edges = get_adaptive_canny_edges\(.*\)[ \t]*$/m, (_, ind) => ind + cannyLine()),
   visible: () => !!C.data[C.obj],
-  readBack(code) {
-    const m = code.match(/density_bounds=\(\s*([\d.]+)\s*,\s*([\d.]+)\s*\)/);
-    const f = code.match(/fixed_threshold\([^,]*,[^,]*,\s*([\d.]+)\s*\)/), fixedFmt = (v) => (+v === 0 ? 'off' : (v * 2.55).toFixed(0));
-    if (f) setSlider('c-fixed', Math.max(1, Math.round(+f[1] / 2.55)), fixedFmt);
-    else if (m) { setSlider('c-fixed', 0, fixedFmt); setSlider('c-lo', +m[1], (v) => (+v).toFixed(2)); setSlider('c-hi', +m[2], (v) => (+v).toFixed(2)); }
-    syncCannyControls();
-  },
+  readBack(code) { setCannyMode(/fixed_threshold\(/.test(code) ? 'fixed' : 'adaptive'); },
   render(r) {
     drawRGBA($('c-out'), r.image);
-    const fixed = +$('c-fixed').value > 0, last = r.steps[r.steps.length - 1];
-    const lines = fixed && r.steps.length === 1 ? [fixedLine(last[1], last[2]), fixedNote]
-      : [...(last ? [bandLine(last[3], last[4])] : []), ...r.steps.map(([p, t, dens, lo, hi], i) => stepLine(i, p, t, dens, lo, hi))];
-    if (!fixed && last && r.steps.length === last[5] && !(last[2] >= last[3] && last[2] <= last[4])) lines.push(BAND_MISS);
-    $('c-log').innerHTML = lines.join('\n'); $('c-mode').textContent = 'Live · the release’s Python';
+    const last = r.steps[r.steps.length - 1];
+    $('c-log').textContent = last ? cannySummary(C.mode === 'fixed', last[1], last[2], r.steps.length) : '';
+    $('c-mode').textContent = 'Live · the release’s Python';
   },
 });
 const ccLine = () => `show(match_color_profile(exemplar, mask, raw, blend_factor=${(+$('cc-col').value).toFixed(2)}, contrast_weight=${(+$('cc-lum').value).toFixed(2)}))`;
@@ -916,7 +890,7 @@ $('run-all').addEventListener('click', async () => {
   const b = $('run-all'), res = document.querySelectorAll('.runall [data-res]');
   b.disabled = true; b.textContent = 'Running…'; res.forEach((e) => { e.textContent = 'waiting for Python…'; });
   if (await pyUntilReady()) {
-    try { const d = await prepCanny(C.obj); showCannyInput(d); $('c-tag').textContent = +$('c-fixed').value > 0 ? 'Fixed-threshold edges' : 'Adaptive edges'; await CELLS.canny.run(); }
+    try { const d = await prepCanny(C.obj); showCannyInput(d); $('c-tag').textContent = C.mode === 'fixed' ? 'Fixed-threshold edges' : 'Adaptive edges'; await CELLS.canny.run(); }
     catch (e) { document.querySelector('.runall [data-res="canny"]').textContent = 'images did not load'; }
     try { if (!CC.ctx) await prepCC(); await CELLS.cc.run(); }
     catch (e) { document.querySelector('.runall [data-res="cc"]').textContent = 'images did not load'; }
