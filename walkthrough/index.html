@@ -362,7 +362,7 @@ footer { margin: 80px 0 40px; font-size: 13px; color: var(--faint); }
       <div class="trio" style="margin-top:12px">
         <div class="cell"><img loading="lazy" decoding="async" src="assets/exemplar_pink.webp" alt="Pink exemplar" width="906" height="906"><span class="tag">Exemplar</span></div>
         <div class="cell"><img loading="lazy" decoding="async" src="assets/raw_octopus_pink.webp" alt="Raw diffusion output" width="858" height="742"><span class="tag">Before correction</span></div>
-        <div class="cell"><canvas id="cc-out" style="width:100%;height:100%;object-fit:cover"></canvas><span class="tag">After correction</span></div>
+        <div class="cell"><canvas id="cc-out" style="width:100%;height:100%;object-fit:cover"></canvas><span class="tag" id="cc-out-tag">After correction</span></div>
       </div>
       <div class="pycell" id="py-cc"></div>
     </div>
@@ -454,7 +454,22 @@ function seg(group, onChange) {
     onChange(b.dataset.v);
   });
 }
-function loadImage(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
+// Retries twice, since a download can drop on a busy connection.
+function loadImage(src, tries = 3) {
+  return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i);
+    i.onerror = () => (tries > 1 ? setTimeout(() => loadImage(src, tries - 1).then(res, rej), 1000) : rej(new Error(`Could not load ${src}`))); i.src = src; });
+}
+const loadFailed = (tag) => { $(tag).textContent = 'Images did not load. Reload the page to try again.'; };
+// The page's own <img> elements retry twice as well, including any that failed before this script ran.
+function retryImage(img) {
+  const n = +(img.dataset.retry || 0); if (n >= 2 || !img.src) return; img.dataset.retry = n + 1;
+  setTimeout(() => { const u = new URL(img.src); u.searchParams.set('retry', n + 1); img.src = u.href; }, 1000);
+}
+document.querySelectorAll('img').forEach((img) => {
+  img.addEventListener('load', () => { delete img.dataset.retry; });
+  img.addEventListener('error', () => retryImage(img));
+  if (img.complete && img.src && !img.naturalWidth) retryImage(img);
+});
 const preload = (srcs) => srcs.forEach((s) => { const i = new Image(); i.src = s; });
 // Background preloads wait until the page has loaded and the browser is idle, so they never
 // compete with the images on the first screen (matters on slow phone connections).
@@ -593,7 +608,9 @@ function edgesAt(d, tHigh) {
 let cannyBusy = false, cannyAgain = false;
 async function runCanny() {
   if (cannyBusy) { cannyAgain = true; return; } cannyBusy = true;
-  const d = await prepCanny(C.obj); $('c-in').getContext('2d').putImageData(d.inputImage, 0, 0);
+  let d;
+  try { d = await prepCanny(C.obj); } catch (e) { cannyBusy = false; return loadFailed('c-tag'); }
+  $('c-in').getContext('2d').putImageData(d.inputImage, 0, 0);
   for (const id of ['c-in', 'c-out']) $(id).style.aspectRatio = d.aspect;
   const lo = +$('c-lo').value, hi = Math.max(+$('c-hi').value, lo + 0.01), fixed = +$('c-fixed').value;
   $('c-tag').textContent = fixed > 0 ? 'Fixed-threshold edges' : 'Adaptive edges';
@@ -681,7 +698,7 @@ function runCC() {
   CC.ctx.putImageData(CC.img, 0, 0);
 }
 for (const id of ['cc-col', 'cc-lum']) $(id).addEventListener('input', () => { $(id + '-o').textContent = (+$(id).value).toFixed(2); runCC(); });
-new IntersectionObserver(async (es, ob) => { if (es.some((e) => e.isIntersecting)) { ob.disconnect(); await prepCC(); runCC(); } }, { rootMargin: '400px' }).observe($('cc-out'));
+new IntersectionObserver(async (es, ob) => { if (es.some((e) => e.isIntersecting)) { ob.disconnect(); try { await prepCC(); } catch (e) { return loadFailed('cc-out-tag'); } runCC(); } }, { rootMargin: '400px' }).observe($('cc-out'));
 
 // ---------- the release's Python, in your browser ----------
 // A worker runs Pyodide (CPython compiled to WebAssembly) with NumPy, OpenCV and Pillow. The figures call
