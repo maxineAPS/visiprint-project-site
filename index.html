@@ -34,6 +34,12 @@
   <script src="static/js/index.js"></script>
 </head>
 <body>
+<p id="report" style="max-width:680px;margin:12px auto 0;padding:8px 14px;background:#f6e3de;border-radius:8px;font-size:14px;line-height:1.5;color:#1a1a1a;">
+  This <a href="walkthrough/" style="color:inherit;text-decoration:underline;">live walkthrough</a> is new. Please
+  <a id="report-link" href="mailto:max1@mit.edu?subject=Bug%20report%3A%20VisiPrint%20walkthrough" style="color:inherit;font-weight:600;text-decoration:underline;">report bugs or issues</a> to max1@mit.edu.</p>
+<style>@media (max-width: 720px) { #report { margin: 12px 16px 0 !important; } }</style>
+<script>document.getElementById('report-link').href = 'mailto:max1@mit.edu?subject=' + encodeURIComponent('Bug report: VisiPrint walkthrough')
+  + '&body=' + encodeURIComponent('What happened:\n\n\n---\nPage: ' + location.href + '\nBrowser: ' + navigator.userAgent);</script>
   
   <section class="hero">
     <div class="hero-body">
