@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="format-detection" content="telephone=no, email=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VisiPrint app</title>
+<meta name="description" content="The VisiPrint live demo: preview the appearance of a 3D print from a slicer screenshot and a photo of a filament sample.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; height: 100%; background: #fff; color: #1a1a1a; font: 14px/1.4 Inter, system-ui, sans-serif; }
+  body { display: flex; flex-direction: column; }
+  header { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: baseline; padding: 10px 16px; border-bottom: 1px solid #e6e6e6; }
+  header strong { font-weight: 600; margin-right: auto; }
+  header a { color: #1a1a1a; }
+  .report { flex-basis: 100%; margin: 0; color: #6b6b6b; font-size: 13px; }
+  iframe { flex: 1; width: 100%; border: 0; }
+</style>
+</head>
+<body>
+<header>
+  <strong>VisiPrint</strong>
+  <a href="../">Walkthrough</a>
+  <a href="https://huggingface.co/spaces/maxigeenut/VisiPrint" target="_blank" rel="noopener">Open on Hugging Face ↗</a>
+  <p class="report">This live demo is new. Please report bugs or issues to max1@mit.edu. If it says the free GPU allowance is used up, open it on Hugging Face while signed in.</p>
+</header>
+<iframe src="https://maxigeenut-visiprint.hf.space/?__theme=light" title="VisiPrint live demo" allow="clipboard-write"></iframe>
+</body>
+</html>
